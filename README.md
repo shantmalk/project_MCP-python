@@ -28,7 +28,7 @@ Make tables to count the number of lesions found in the LAD/LCx/RCA for each pro
 ## Example 2
 Make a graph of the LV mass, the mass at-risk and the percent mass at-risk of patient data parsed from Example 1.  Do for “worst” lesions in each patient.  Recreate the graph below.
 
-![example2-barchart](/readme-media/example2-barchart.png)
+![example2-bargraph](/readme-media/example2-bargraph.png)
 
 
 # Tasks
