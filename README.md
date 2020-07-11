@@ -18,7 +18,20 @@ To achieve this, we will follow some guidelines:
 	-	Create a working prototype script
 	-	Once we know exactly what we want, refine and generalize the script into reusable functions
 
-# Example 1
+# Examples
+## Example 1
 Make tables to count the number of lesions found in the LAD/LCx/RCA for each processed patient.  Split results into STEMI versus Other MI groups.  Recreate the table below.
 
 ![example1-tables](/readme-media/example1-tables.png)
+
+
+## Example 2
+Make a graph of the LV mass, the mass at-risk and the percent mass at-risk of patient data parsed from Example 1.  Do for “worst” lesions in each patient.  Recreate the graph below.
+
+![example2-barchart](/readme-media/example2-barchart.png)
+
+
+# Tasks
+## Task 1
+Task 1:  Make a bar graph, similar to __Example 2__.  Instead of analyzing the “worst” lesion, sum the mass at-risk of all lesions for each patient.  Split groups into STEMI and Other MI.
+
