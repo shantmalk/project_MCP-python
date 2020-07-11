@@ -18,6 +18,17 @@ A query is just a specific way of filter our data based on specific criteria.  W
 ```
 \\polaris.radsci.uci.edu\MCP_STUDY\STUDY\DATABASE\db_CONFIRM.accdb
 ```
+
+## Path to Confirm Database Documentation
+```
+\\polaris.radsci.uci.edu\MCP_STUDY\STUDY\CONFIRM\ICONIC_Data_Dictionary_20170608_YAO_063017.docx
+```
+
+## Password for Confirm Database Documentation
+```
+ICONIC123
+```
+
 ## Confirm Tables
   The tables in the Confirm database are arranged as follows:
 - Tables always have the prefix "tbl"
