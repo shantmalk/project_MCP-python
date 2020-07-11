@@ -21,4 +21,4 @@ To achieve this, we will follow some guidelines:
 # Example 1
 Make tables to count the number of lesions found in the LAD/LCx/RCA for each processed patient.  Split results into STEMI versus Other MI groups.  Recreate the table below.
 
-![example1-tables](/readme_media/example1_tables.png)
+![example1-tables](/readme-media/example1-tables.png)
