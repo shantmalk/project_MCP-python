@@ -63,16 +63,32 @@ To achieve this, we will follow some guidelines:
 ## Example 1
 Make tables to count the number of lesions found in the LAD/LCx/RCA for each processed patient.  Split results into STEMI versus Other MI groups.  Recreate the table below.
 
+__Table 1: Number of "worst" lesions, separated by LAD, LCx, or RCA lesion locations and stratified based on STEMI versus Other MI groups.__
+
 ![example1-tables](/readme-media/example1-tables.png)
 
 
+
+
 ## Example 2
-Make a graph of the LV mass, the mass at-risk and the percent mass at-risk of patient data parsed from Example 1.  Do for “worst” lesions in each patient.  Recreate the graph below.
+Make a graph of the LV mass, the mass at-risk and the percent mass at-risk of patient data parsed from Example 1.  Select the “worst” lesions in each patient, therefore only __one__ lesion is assessed for each patient.  Recreate the graph below.
 
 ![example2-bargraph](/readme-media/example2-bargraph.png)
+
+__Figure 1:  Mean Myocardial Mass Measurements.__  Left ventricle mass and mass at-risk had significant differences between STEMI and Other MI-types groups.  Error bars represent standard deviation. 
+
+*Statistically significant difference in mean (p-value < .05)
+
+_(LV = Left ventricle; STEMI = ST-segment elevation myocardial infarction; Other = Other types of myocardial infarction (NSTEMI, unstable angina, or indeterminant))_
+
 
 
 # Tasks
 ## Task 1
-Task 1:  Make a bar graph, similar to __Example 2__.  Instead of analyzing the “worst” lesion, sum the mass at-risk of all lesions for each patient.  Split groups into STEMI and Other MI.
+Task 1:  Make a bar graph, similar to __Example 2__.  Instead of analyzing the “worst” lesion, sum the mass at-risk of all lesions for each patient.  Split groups into STEMI and Other MI.  For example, the figure below shows the myocardium distal to __all__ lesions found in patient __confirm 2741__.  For this task, instead of picking the "worst" lesion and calculating the myocardial mass at-risk using only that lesion, we will sum the myocardium distal to __all__ lesions and use that as the "total" myocardial mass at-risk.
+
+![task1-total_maar](/readme-media/task1-total_maar.png)
+
+__Figure 2:  Myocardial Mass at-Risk for All Lesions.__ This is a 3D-render of the myocardial mass at-risk distal to __all__ lesions found in patient __confirm 2741__.  Myocardium _distal_ of lesion will appear as __blue__ (this is used to derive myocardial mass at-risk).  Myocaridum _proximal_ to a lesion will appear as __red__.  Myocardium not included in the main vessel tree, of which the lesion is a part of, will appear as __teal__.
+
 
