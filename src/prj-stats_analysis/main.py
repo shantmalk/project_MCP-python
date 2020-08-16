@@ -7,4 +7,5 @@ import routines
 
 
 # ROUTINE BLOCK ============================================================ #
-routines.routineMIType_demographics.routine()
+routines.routineMIType_status.run()
+routines.routineMIType_error.run()

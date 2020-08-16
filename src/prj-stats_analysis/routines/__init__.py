@@ -1,4 +1,5 @@
 # ROUTINES
-import routines.routineMIType_demographics as routineMIType_demographics
+import routines.routineMIType_status as routineMIType_status
+import routines.routineMIType_error as routineMIType_error
 
 # ADD ADDT ROUTINES BELOW
