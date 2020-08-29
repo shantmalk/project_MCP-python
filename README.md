@@ -70,6 +70,14 @@ To achieve this, we will follow some guidelines:
 	-	Create a working prototype script
 	-	Once we know exactly what we want, refine and generalize the script into reusable functions
 
+# Notes
+
+Useful tips for reference:
+
+1.	Queries built in Microsoft Access can be loaded directly into Python using an SQL query (i.e. "SELECT * FROM qselSomeQuery" works)
+	-	Queries that rely on UNION will **NOT** load directly into Python, even if a query indirectly references another query that uses a UNION, the SQL query will fail in Python
+	-	A work around is to convert UNION queries into tables in Microsoft Access (i.e. make the data static) - this way you can call the table made from the UNION rather than the UNION itself
+
 # Examples
 ## Example 1
 Make tables to count the number of lesions found in the LAD/LCx/RCA for each processed patient.  Split results into STEMI versus Other MI groups.  Recreate the table below.
@@ -95,6 +103,7 @@ _(LV = Left ventricle; STEMI = ST-segment elevation myocardial infarction; Other
 
 
 # Tasks
+
 ## Task 1
 Task 1:  Make a bar graph, similar to __Example 2__.  Instead of analyzing the “worst” lesion, sum the mass at-risk of all lesions for each patient.  Split groups into STEMI and Other MI.  For example, the figure below shows the myocardium distal to __all__ lesions found in patient __confirm 2741__.  For this task, instead of picking the "worst" lesion and calculating the myocardial mass at-risk using only that lesion, we will sum the myocardium distal to __all__ lesions and use that as the "total" myocardial mass at-risk.
 
@@ -102,4 +111,5 @@ Task 1:  Make a bar graph, similar to __Example 2__.  Instead of analyzing the �
 
 __Figure 2:  Myocardial Mass at-Risk for All Lesions.__ This is a 3D-render of the myocardial mass at-risk distal to __all__ lesions found in patient __confirm 2741__.  Myocardium _distal_ of lesion will appear as __blue__ (this is used to derive myocardial mass at-risk).  Myocaridum _proximal_ to a lesion will appear as __red__.  Myocardium not included in the main vessel tree, of which the lesion is a part of, will appear as __teal__.
 
-
+## Task 2
+Task 2:	Convert routineMIType_error and routineMIType_status outputs from console-based text to GUI tables

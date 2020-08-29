@@ -7,5 +7,7 @@ import routines
 
 
 # ROUTINE BLOCK ============================================================ #
-routines.routineMIType_status.run()
-routines.routineMIType_error.run()
+routines.routineGeneral_status.run()
+routines.routineGeneral_error.run()
+routines.routineMIType_worstlesion.run('C:/Users/smDesktop/Desktop/research/prj-mcp/data/mitype_versus_mass/')
+routines.routineMIvNoMI_worstlesion.run('C:/Users/smDesktop/Desktop/research/prj-mcp/data/mi_versus_nomi/')

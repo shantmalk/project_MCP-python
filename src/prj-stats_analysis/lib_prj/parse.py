@@ -10,7 +10,7 @@ import pandas as pd
 import pyodbc
 
 def json_parse(path_qsel_json, kname):
-    with open(path_qsel_json) as json_file:
+    with open(path_qsel_json, encoding='utf-8-sig') as json_file:
         data_json = json.load(json_file)
     return data_json[kname]
 

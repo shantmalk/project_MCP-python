@@ -1,5 +1,7 @@
 # ROUTINES
-import routines.routineMIType_status as routineMIType_status
-import routines.routineMIType_error as routineMIType_error
+import routines.routineGeneral_status as routineGeneral_status
+import routines.routineGeneral_error as routineGeneral_error
+import routines.routineMIType_worstlesion as routineMIType_worstlesion
+import routines.routineMIvNoMI_worstlesion as routineMIvNoMI_worstlesion
 
 # ADD ADDT ROUTINES BELOW

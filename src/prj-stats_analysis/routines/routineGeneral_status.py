@@ -3,25 +3,18 @@ import pandas as pd
 import numpy as np
 from tabulate import tabulate
 
-PATH_TEMPLATE_JSON = 'C:/Users/smDesktop/Desktop/research/prj-mcp/code-py/src/prj-stats_analysis/qsel_json/{}.json'
-PATH_DB = 'C:/Users/smDesktop/Desktop/research/prj-mcp/data/database/db_CONFIRM-merged.accdb'
 
-def print_label( ):
-    print('--------------------------------------------------------------------------')
-    print('routineMIType_status')
-    print()
-
-def run( ):
+def run(path_wr=''):
     '''
     Basic routine for visualizing processing status of patients for CONFIRM study
     '''
     
-    print_label()
+    lib_prj.visualize.print_label('routineGeneral_status')
     
     # ------------------------------- PARSE -------------------------------- #
-    pd_qsel_phase1_raw = lib_prj.parse.qsel_parse(PATH_DB, PATH_TEMPLATE_JSON.format('qsel_mitype'), 'status_prc_phase1')
-    pd_qsel_phase2_raw = lib_prj.parse.qsel_parse(PATH_DB, PATH_TEMPLATE_JSON.format('qsel_mitype'), 'status_prc_phase2')
-    pd_qsel_phase3_raw = lib_prj.parse.qsel_parse(PATH_DB, PATH_TEMPLATE_JSON.format('qsel_mitype'), 'status_prc_phase3')
+    pd_qsel_phase1_raw = lib_prj.parse.qsel_parse(lib_prj.paths.PATH_DB, lib_prj.paths.PATH_TEMPLATE_JSON.format('qsel_general'), 'status_prc_phase1')
+    pd_qsel_phase2_raw = lib_prj.parse.qsel_parse(lib_prj.paths.PATH_DB, lib_prj.paths.PATH_TEMPLATE_JSON.format('qsel_general'), 'status_prc_phase2')
+    pd_qsel_phase3_raw = lib_prj.parse.qsel_parse(lib_prj.paths.PATH_DB, lib_prj.paths.PATH_TEMPLATE_JSON.format('qsel_general'), 'status_prc_phase3')
     
     # ------------------------------ PROCESS ------------------------------- #
     # Add phase column to each dataframe
@@ -55,6 +48,9 @@ def run( ):
     print(tabulate(pd_qsel_pivot, headers='keys', tablefmt='psql'))
     
     # ADD:  Output to file here in future
-
+    if len(path_wr) > 0:
+        pass
+    
+    
 if __name__ == '__main__':
    pd_test = run()
