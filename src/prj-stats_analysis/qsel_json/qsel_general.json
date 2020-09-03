@@ -22,6 +22,9 @@
 	"status_err_per_patient" :
 	{
 		"qsel" : "SELECT [qselError-persistent].id_patient, [qselError-persistent].id_err, [qselError-persistent].msg_err, [qselError-persistent].notes, [qselError-persistent].timestamp_err, [qselError-persistent].id_number FROM [qselError-persistent] INNER JOIN [qselErrorMostRecent-timestamp] ON [qselError-persistent].timestamp_err = [qselErrorMostRecent-timestamp].MaxOftimestamp_err GROUP BY [qselError-persistent].id_patient, [qselError-persistent].id_err, [qselError-persistent].msg_err, [qselError-persistent].notes, [qselError-persistent].timestamp_err, [qselError-persistent].id_number, [qselError-persistent].id_err HAVING ((([qselError-persistent].id_err)<>'StudyController:missingVesselCSV') AND (([qselError-persistent].id_err)<>'StudyController:missingSegmentationLV'));"
-
-	}
+	},
+	"tmp_query" :
+    {
+        "qsel" : "SELECT qselTmpQuery.* FROM qselTmpQuery;"
+    }
 }

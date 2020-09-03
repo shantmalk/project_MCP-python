@@ -26,7 +26,10 @@ def run(path_wr=''):
     lib_prj.visualize.print_label('routineMIType_worstlesion')
     
     # ------------------------------- PARSE -------------------------------- #
-    pd_qsel_data = lib_prj.parse.qsel_parse(lib_prj.paths.PATH_DB, lib_prj.paths.PATH_TEMPLATE_JSON.format('qsel_mi_versus_nomi'), 'worstlesion_unmatched')
+    fpath_json = lib_prj.paths.PATH_TEMPLATE_JSON.format('qsel_mi_versus_nomi')
+    fkey_json = 'worstlesion_unmatched'
+    
+    pd_qsel_data = lib_prj.parse.qsel_parse(lib_prj.paths.PATH_DB, fpath_json, fkey_json)
     pd_qsel_data = pd_qsel_data.replace(r'^\s*$', '0', regex=True)
     
     # ------------------------------ PROCESS ------------------------------- #
@@ -107,6 +110,8 @@ def run(path_wr=''):
     
     fig = lib_prj.visualize.boxplot_plotly(pd_qsel_data, args_plotly, '')
     fig.update_yaxes(title='Mass (g)')
+    
+    # Save file if path specified
     if len(path_wr) > 0:   
         plot_url = plot(fig, filename=path_wr + 'boxplot_mitype_lv_mass.html')
     else:
@@ -118,6 +123,8 @@ def run(path_wr=''):
 
     fig = lib_prj.visualize.boxplot_plotly(pd_qsel_data, args_plotly, '')
     fig.update_yaxes(title='Mass (g)')
+    
+    # Save file if path specified
     if len(path_wr) > 0:   
         plot_url = plot(fig, filename=path_wr + 'boxplot_mitype_mcp_mass.html')
     else:
@@ -129,6 +136,8 @@ def run(path_wr=''):
     
     fig = lib_prj.visualize.boxplot_plotly(pd_qsel_data, args_plotly, '')
     fig.update_yaxes(title='Mass Percent (%)')
+    
+    # Save file if path specified
     if len(path_wr) > 0:   
         plot_url = plot(fig, filename=path_wr + 'boxplot_mitype_mcp_perc_mass.html')
     else:
