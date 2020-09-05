@@ -13,6 +13,9 @@ PATH_ROOT = 'C:/Users/smDesktop/Desktop/research/prj-mcp/'
 PATH_TEMPLATE_JSON = PATH_ROOT + 'code-py/src/prj-stats_analysis/qsel_json/{}.json'
 PATH_DB = PATH_ROOT + 'data/database/db_CONFIRM-merged.accdb'
 PATH_PLOTLY_TEMP = PATH_ROOT + 'temp_plotly/'
+PATH_ANALYSIS = PATH_ROOT + 'code-py/analysis/'
+PATH_ANALYSIS_FIG_PNG = PATH_ANALYSIS + 'figs/png/'
+PATH_ANALYSIS_FIG_HTML = PATH_ANALYSIS + 'figs/html/'
 
 
 # -------------------------------- FUNCTIONS ------------------------------- #
