@@ -116,7 +116,7 @@ def run(path_wr=''):
     # TABLES:
         
     # Print per-patient data for debugging
-    # print(tabulate(pd_qsel_data, headers='keys', tablefmt='psql'))
+    print(tabulate(pd_qsel_data, headers='keys', tablefmt='psql'))
     # Print mean data
     print(tabulate(pd_qsel_pivot, headers='keys', tablefmt='psql'))
     # Print ANOVA tables
@@ -136,6 +136,7 @@ def run(path_wr=''):
         'points' : 'all',
         'color' : 'lesion_worst_str',
         'labels' : {'lesion_worst_str' : 'Lesion Type'},
+        'hover_data' : [ ],
         }
     
     # ------------------------------- PLOT 1 ------------------------------- #
