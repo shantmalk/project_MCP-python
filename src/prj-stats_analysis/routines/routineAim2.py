@@ -22,9 +22,11 @@ def run(path_wr=''):
     INPUTS
         path_wr     [STR | Directory where visualization data can be saved *OPTIONAL*; if not specified, no data will be written]
     '''
+    
     path_analysis_png = lib_prj.paths.PATH_ANALYSIS_FIG_PNG
     path_analysis_html = lib_prj.paths.PATH_ANALYSIS_FIG_HTML
-    lib_prj.visualize.print_label('routineAim1')
+    
+    lib_prj.visualize.print_label('routineAim2')
     
     # ------------------------------- PARSE -------------------------------- #
     fpath_json = lib_prj.paths.PATH_TEMPLATE_JSON.format('qsel_mi_versus_nomi')
@@ -48,23 +50,20 @@ def run(path_wr=''):
     pd_qsel_data['lesion_lcx'] = np.where(pd_qsel_data['id_main_vessel'] == 'lcx', 1, 0)
     pd_qsel_data['lesion_rca'] = np.where(pd_qsel_data['id_main_vessel'] == 'rca', 1, 0)
     
-    # conds = [
-    #     (pd_qsel_data['mi_type'] == '1'),
-    #     (pd_qsel_data['mi_type'] == '2'),
-    #     (pd_qsel_data['mi_type'] == '3'),  
-    #     (pd_qsel_data['mi_type'] == '4'),
-    #     (pd_qsel_data['mi_event'] == 0),
-    #     ]
     conds = [
-        (pd_qsel_data['mi_event'] == 1),
+        (pd_qsel_data['mi_type'] == '1'),
+        (pd_qsel_data['mi_type'] == '2'),
+        (pd_qsel_data['mi_type'] == '3'),  
+        (pd_qsel_data['mi_type'] == '4'),
         (pd_qsel_data['mi_event'] == 0),
         ]
-    vals = ['MI', 'No MI']
+    
+    vals = ['STEMI', 'NSTEMI', 'IND', 'UA', 'No MI']
     
     pd_qsel_data['mi_type_str'] = np.select(conds, vals)
         
     anova_grps_a = ['lesion_lad', 'lesion_lcx', 'lesion_rca', ]
-    anova_grps_b = ['mi_type_mi', 'mi_type_none', ]
+    anova_grps_b = ['mi_type_stemi', 'mi_type_nstemi', 'mi_type_uangina', 'mi_type_unknown', 'mi_type_none', ]
     for ii in range(len(anova_grps_a)):
         print('================================== {:^20} =================================='.format(anova_grps_a[ii]))
         print('ANOVA -------- LV Mass ----------- ')
@@ -96,26 +95,21 @@ def run(path_wr=''):
     pd_qsel_pivot_list = [pd_qsel_pivot_totals, pd_qsel_pivot_mean, pd_qsel_pivot_std]
     # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
     pd_qsel_pivot = reduce(lambda left,right: pd.merge(left, right, on=pivot_groups,how='outer',), pd_qsel_pivot_list) 
-    print(tabulate(pd_qsel_pivot, headers='keys', tablefmt='psql'))
-    lib_prj.visualize.table_basic(pd_qsel_pivot.sort_values(by=['id_main_vessel', 'mi_type_str']), { }, path_analysis_png + 'table2b.png')
+    print(tabulate(pd_qsel_pivot.sort_values(by=['id_main_vessel', 'mi_type_str']), headers='keys', tablefmt='psql'))
+    lib_prj.visualize.table_basic(pd_qsel_pivot.sort_values(by=['id_main_vessel', 'mi_type_str']), { }, path_analysis_png + 'table3b.png')
     
     # ---------------------------- Pivot Table 2 --------------------------- #
     print('================================== {:^20} =================================='.format('All Lesions'))
     print('ANOVA -------- LV Mass ----------- ')
-    pd_anova_all_lesions_mass_lv_g = lib_prj.process.stats_anova(pd_qsel_data, anova_grps_b, 'mass_lv_g')
-    print(pd_anova_all_lesions_mass_lv_g)
+    print(lib_prj.process.stats_anova(pd_qsel_data, anova_grps_b, 'mass_lv_g'))
     print()
     print('ANOVA -------- MCP Mass (g) ------ ')
-    pd_anova_all_lesions_mcp_mass_g = lib_prj.process.stats_anova(pd_qsel_data, anova_grps_b, 'mass_mcp_g')
-    print(pd_anova_all_lesions_mcp_mass_g)
+    print(lib_prj.process.stats_anova(pd_qsel_data, anova_grps_b, 'mass_mcp_g'))
     print()
     print('ANOVA -------- MCP Mass (%) ------ ')
-    pd_anova_all_lesions_mcp_mass_perc = lib_prj.process.stats_anova(pd_qsel_data, anova_grps_b, 'mass_mcp_perc')
-    print(pd_anova_all_lesions_mcp_mass_perc)
+    print(lib_prj.process.stats_anova(pd_qsel_data, anova_grps_b, 'mass_mcp_perc'))
     print()
-    lib_prj.visualize.table_basic(pd_anova_all_lesions_mass_lv_g, { }, path_analysis_png + 'table2c.png')
-    lib_prj.visualize.table_basic(pd_anova_all_lesions_mcp_mass_g, { }, path_analysis_png + 'table2d.png')
-    lib_prj.visualize.table_basic(pd_anova_all_lesions_mcp_mass_perc, { }, path_analysis_png + 'table2e.png')
+    
     
     pivot_groups = ['mi_type_str',]
     # Make pivot table
@@ -136,14 +130,16 @@ def run(path_wr=''):
     # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
     pd_qsel_pivot = reduce(lambda left,right: pd.merge(left, right, on=pivot_groups,how='outer',), pd_qsel_pivot_list) 
     print(tabulate(pd_qsel_pivot, headers='keys', tablefmt='psql'))
-    lib_prj.visualize.table_basic(pd_qsel_pivot, { }, path_analysis_png + 'table2a.png')
-    
+    lib_prj.visualize.table_basic(pd_qsel_pivot, { }, path_analysis_png + 'table3a.png')
     # ------------------------------ VISUALIZE ----------------------------- #
 
     
     # FIGURES:
     lib_prj.paths.make_directory(path_wr) 
-
+    
+    
+    
+    
     # ------------------------- FIGURE 2A-B PARAMS ------------------------- #
     pd_qsel_data = pd_qsel_data.sort_values(by='mi_type')
     args_plotly = {
@@ -154,7 +150,7 @@ def run(path_wr=''):
         }
     
     # ------------------------------ FIGURE 2A ----------------------------- #
-    figure_label = 'Figure 2A'
+    figure_label = 'Figure 3A'
     y_data = 'mass_mcp_g'
     y_label = 'Mass Percent (g)'
     title =  figure_label + ': Box plot of MAAR<sub>MCP (abs)</sub> of MI and no MI groups'
@@ -172,7 +168,7 @@ def run(path_wr=''):
     fig.write_image(path_analysis_png + figure_fname_label + '.png')
     
     # ------------------------------- PLOT 2B ------------------------------- #
-    figure_label = 'Figure 2B'
+    figure_label = 'Figure 3B'
     y_data = 'mass_mcp_perc'
     y_label = 'Mass Percent (%)'
     title =  figure_label + ': Box plot of MAAR<sub>MCP (rel)</sub> of MI and no MI groups'
@@ -201,7 +197,7 @@ def run(path_wr=''):
         }
     
     # ------------------------------ FIGURE 2C ----------------------------- #
-    figure_label = 'Figure 2C'
+    figure_label = 'Figure 3C'
     y_data = 'mass_mcp_g'
     y_label = 'Mass Percent (g)'
     x_label = 'Main Coronary Artery Lesion'
@@ -219,7 +215,7 @@ def run(path_wr=''):
     fig.write_image(path_analysis_png + figure_fname_label + '.png')
     
     # ------------------------------- PLOT 2D ------------------------------- #
-    figure_label = 'Figure 2D'
+    figure_label = 'Figure 3D'
     y_data = 'mass_mcp_perc'
     y_label = 'Mass Percent (%)'
     x_label = 'Main Coronary Artery Lesion'

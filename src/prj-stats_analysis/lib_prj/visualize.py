@@ -9,6 +9,124 @@ import shutil
 import plotly.express as px
 from plotly.offline import plot
 import lib_prj
+import matplotlib.pyplot as plt
+from pandas.plotting import table as pd_table
+import numpy as np
+import six
+
+
+# TABLES
+def table_basic(pd_data, args, fpath):
+    '''
+    
+
+    Parameters
+    ----------
+    pd_data : TYPE
+        DESCRIPTION.
+    args : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    '''
+    
+    
+    
+    # SETUP AXIS:
+    pd_data = pd_data.round(2) 
+    pd_data = table_merge_mean_std(pd_data)
+    ax = render_mpl_table(pd_data, header_columns=0, col_width=3.0)
+    plt.savefig(fpath)
+
+
+
+def render_mpl_table(data, col_width=3.0, row_height=0.625, font_size=14,
+                     header_color='#40466e', row_colors=['#f1f1f2', 'w'], edge_color='w',
+                     bbox=[0, 0, 1, 1], header_columns=0,
+                     ax=None, **kwargs):
+    '''
+    
+    Ripped from the internet https://stackoverflow.com/questions/19726663/how-to-save-the-pandas-dataframe-series-data-as-a-figure
+    
+    Parameters
+    ----------
+    data : TYPE
+        DESCRIPTION.
+    col_width : TYPE, optional
+        DESCRIPTION. The default is 3.0.
+    row_height : TYPE, optional
+        DESCRIPTION. The default is 0.625.
+    font_size : TYPE, optional
+        DESCRIPTION. The default is 14.
+    header_color : TYPE, optional
+        DESCRIPTION. The default is '#40466e'.
+    row_colors : TYPE, optional
+        DESCRIPTION. The default is ['#f1f1f2', 'w'].
+    edge_color : TYPE, optional
+        DESCRIPTION. The default is 'w'.
+    bbox : TYPE, optional
+        DESCRIPTION. The default is [0, 0, 1, 1].
+    header_columns : TYPE, optional
+        DESCRIPTION. The default is 0.
+    ax : TYPE, optional
+        DESCRIPTION. The default is None.
+    **kwargs : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    ax : TYPE
+        DESCRIPTION.
+
+    '''
+    if ax is None:
+        size = (np.array(data.shape[::-1]) + np.array([0, 1])) * np.array([col_width, row_height])
+        fig, ax = plt.subplots(figsize=size)
+        ax.axis('off')
+
+    mpl_table = ax.table(cellText=data.values, bbox=bbox, colLabels=data.columns, **kwargs)
+
+    mpl_table.auto_set_font_size(False)
+    mpl_table.set_fontsize(font_size)
+
+    for k, cell in six.iteritems(mpl_table._cells):
+        cell.set_edgecolor(edge_color)
+        if k[0] == 0 or k[1] < header_columns:
+            cell.set_text_props(weight='bold', color='w')
+            cell.set_facecolor(header_color)
+        else:
+            cell.set_facecolor(row_colors[k[0]%len(row_colors) ])
+    return ax
+
+def table_merge_mean_std(pd_data):
+    '''
+    Merges numerical columnes for "_mean" and "_std" with a "±" sign 
+
+    Parameters
+    ----------
+    pd_data : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    '''
+    pd_data_merged = pd_data
+    cols = list(filter(lambda x: (x.find('_std') > -1 or x.find('_mean') > -1), list(pd_data_merged.columns)))
+    cols_cleaned = list(set(x.replace('_std','').replace('_mean','') for x in cols))
+    for ii in range(len(cols_cleaned)):
+        col_lbl_mean = cols_cleaned[ii] + '_mean'
+        col_lbl_std = cols_cleaned[ii] + '_std'
+        pd_data_merged = pd_data_merged.drop(columns=[col_lbl_mean, col_lbl_std])
+        col_mean = pd_data[col_lbl_mean].apply(str)
+        col_std = pd_data[col_lbl_std].apply(str)
+        pd_data_merged[cols_cleaned[ii]] = col_mean + ' ± ' + col_std
+    
+    return pd_data_merged
 
 
 # GRAPHS
