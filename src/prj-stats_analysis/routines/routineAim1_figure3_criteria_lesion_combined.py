@@ -187,7 +187,7 @@ def run(path_wr=''):
     # ------------------------------ FIGURE 2A ----------------------------- #
     figure_label = 'Figure 3A'
     y_data = 'mass_mcp_g'
-    y_label = 'Mass Percent (g)'
+    y_label = 'MAAR<sub>MCP (absolute)</sub> (g)'
     title =  figure_label + ': Box plot of MAAR<sub>MCP (abs)</sub> of MI types'
     
     figure_fname_label = figure_label.lower().replace(' ', '')
@@ -205,7 +205,7 @@ def run(path_wr=''):
     # ------------------------------- PLOT 2B ------------------------------- #
     figure_label = 'Figure 3B'
     y_data = 'mass_mcp_perc'
-    y_label = 'Mass Percent (%)'
+    y_label = 'MAAR<sub>MCP (relative)</sub> (%)'
     title =  figure_label + ': Box plot of MAAR<sub>MCP (rel)</sub> of MI types'
     
     figure_fname_label = figure_label.lower().replace(' ', '')
@@ -234,7 +234,7 @@ def run(path_wr=''):
     # ------------------------------ FIGURE 2C ----------------------------- #
     figure_label = 'Figure 3C'
     y_data = 'mass_mcp_g'
-    y_label = 'Mass Percent (g)'
+    y_label = 'MAAR<sub>MCP (absolute)</sub> (g)'
     x_label = 'Main Coronary Artery Lesion'
     title =  figure_label + ': Box plot of MAAR<sub>MCP (abs)</sub> of MI types - per main coronary artery'
     
@@ -252,7 +252,7 @@ def run(path_wr=''):
     # ------------------------------- PLOT 2D ------------------------------- #
     figure_label = 'Figure 3D'
     y_data = 'mass_mcp_perc'
-    y_label = 'Mass Percent (%)'
+    y_label = 'MAAR<sub>MCP (relative)</sub> (%)'
     x_label = 'Main Coronary Artery Lesion'
     title =  figure_label + ': Box plot of MAAR<sub>MCP (rel)</sub> of MI types - per main coronary artery'
     

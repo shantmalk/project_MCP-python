@@ -133,7 +133,7 @@ def run(path_wr=''):
     # ---------------------------- Pivot Table 1 --------------------------- #
     pivot_groups = ['mi_type_str', 'lesion_verified_str']
     # Make pivot table
-    pd_qsel_pivot_totals = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=len, values=['confirm_idc_str'])
+    pd_qsel_pivot_totals = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=len, values=['id_vessel_study'])
     pd_qsel_pivot_totals.columns = ['total_lesions']
     pd_qsel_pivot_totals.reset_index(inplace=True)
     
@@ -155,7 +155,7 @@ def run(path_wr=''):
     # ---------------------------- Pivot Table 2 --------------------------- #
     pivot_groups = ['lesion_verified_str',]
     # Make pivot table
-    pd_qsel_pivot_totals = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=len, values=['confirm_idc_str'])
+    pd_qsel_pivot_totals = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=len, values=['id_vessel_study'])
     pd_qsel_pivot_totals.columns = ['total_lesions']
     pd_qsel_pivot_totals.reset_index(inplace=True)
     
@@ -194,7 +194,7 @@ def run(path_wr=''):
     # ------------------------------ FIGURE 2A ----------------------------- #
     figure_label = 'Figure 5A'
     y_data = 'mass_mcp_g'
-    y_label = 'Mass Percent (g)'
+    y_label = 'MAAR<sub>MCP (absolute)</sub> (g)'
     title =  figure_label + ': Box plot of MAAR<sub>MCP (abs)</sub> of ICA verified and CTA verified lesions'
     
     figure_fname_label = figure_label.lower().replace(' ', '')
@@ -212,7 +212,7 @@ def run(path_wr=''):
     # ------------------------------- PLOT 2B ------------------------------- #
     figure_label = 'Figure 5B'
     y_data = 'mass_mcp_perc'
-    y_label = 'Mass Percent (%)'
+    y_label = 'MAAR<sub>MCP (relative)</sub> (%)'
     title =  figure_label + ': Box plot of MAAR<sub>MCP (rel)</sub> of ICA verified and CTA verified lesions'
     
     figure_fname_label = figure_label.lower().replace(' ', '')
@@ -240,7 +240,7 @@ def run(path_wr=''):
     # ------------------------------ FIGURE 2C ----------------------------- #
     figure_label = 'Figure 5C'
     y_data = 'mass_mcp_g'
-    y_label = 'Mass Percent (g)'
+    y_label = 'MAAR<sub>MCP (absolute)</sub> (g)'
     title =  figure_label + ': Box plot of MAAR<sub>MCP (abs)</sub> of ICA verified and CTA verified lesions'
     
     
@@ -256,7 +256,7 @@ def run(path_wr=''):
     # ------------------------------- PLOT 2D ------------------------------- #
     figure_label = 'Figure 5D'
     y_data = 'mass_mcp_perc'
-    y_label = 'Mass Percent (%)'
+    y_label = 'MAAR<sub>MCP (relative)</sub> (%)'
     title =  figure_label + ': Box plot of MAAR<sub>MCP (rel)</sub> of ICA verified and CTA verified lesions'
     
     
