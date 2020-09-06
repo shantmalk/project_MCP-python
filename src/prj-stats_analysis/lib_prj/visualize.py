@@ -12,6 +12,7 @@ import lib_prj
 import matplotlib.pyplot as plt
 from pandas.plotting import table as pd_table
 import numpy as np
+import pandas as pd
 import six
 
 
@@ -41,7 +42,51 @@ def table_basic(pd_data, fpath, row_colors=['#f1f1f2', 'w'], **kwargs):
     ax = render_mpl_table(pd_data, header_columns=0, col_width=3.0, row_colors=row_colors)
     plt.savefig(fpath)
 
+def table_pvalues(pd_data_dict, fpath, row_colors=['#f1f1f2', 'w'], **kwargs):
+    '''
+    
 
+    Parameters
+    ----------
+    pd_data : TYPE
+        DESCRIPTION.
+    args : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    '''
+    
+    # COMBINE PD_DATA_DICT INTO ONE DATAFRAME
+    pd_data = _combine_anova_dict(pd_data_dict)
+    
+    # SETUP AXIS:
+    pd_data = pd_data.round(2) 
+    ax = render_mpl_table(pd_data, header_columns=0, col_width=3.0, row_colors=row_colors)
+    plt.savefig(fpath)
+
+def _combine_anova_dict(pd_data_dict):
+    '''
+    Combines inputted dictionary into one Pandas dataframe for cleaner output.  Inputted dictionary keys are the group labels and values will be ANOVA Pandas results.
+
+    Parameters
+    ----------
+    pd_data_dict : DICTIONARY[GROUP_LBL(STR) : ANOVA_RESULT(PD)]
+        DESCRIPTION.
+
+    Returns
+    -------
+    pd_data_comb : TYPE
+        DESCRIPTION.
+
+    '''
+    groups = [ ]
+    p_values = [ ]
+    [(groups.append(grp_lbl), p_values.append(anova_result['PR(>F)'][0])) for (grp_lbl, anova_result) in pd_data_dict.items()]
+    pd_data_comb = pd.DataFrame(list(zip(groups, p_values)), columns=['group', 'p-value'])
+    return pd_data_comb
 
 def render_mpl_table(data, col_width=3.0, row_height=0.625, font_size=14,
                      header_color='#40466e', row_colors=['#f1f1f2', 'w'], edge_color='w',
