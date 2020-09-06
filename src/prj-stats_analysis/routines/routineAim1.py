@@ -97,7 +97,7 @@ def run(path_wr=''):
     # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
     pd_qsel_pivot = reduce(lambda left,right: pd.merge(left, right, on=pivot_groups,how='outer',), pd_qsel_pivot_list) 
     print(tabulate(pd_qsel_pivot, headers='keys', tablefmt='psql'))
-    lib_prj.visualize.table_basic(pd_qsel_pivot.sort_values(by=['id_main_vessel', 'mi_type_str']), { }, path_analysis_png + 'table2b.png')
+    lib_prj.visualize.table_basic(pd_qsel_pivot.sort_values(by=['id_main_vessel', 'mi_type_str']), path_analysis_png + 'table2b.png', ['w', '#f1f1f2', '#f1f1f2', 'w',])
     
     # ---------------------------- Pivot Table 2 --------------------------- #
     print('================================== {:^20} =================================='.format('All Lesions'))
@@ -113,9 +113,9 @@ def run(path_wr=''):
     pd_anova_all_lesions_mcp_mass_perc = lib_prj.process.stats_anova(pd_qsel_data, anova_grps_b, 'mass_mcp_perc')
     print(pd_anova_all_lesions_mcp_mass_perc)
     print()
-    lib_prj.visualize.table_basic(pd_anova_all_lesions_mass_lv_g, { }, path_analysis_png + 'table2c.png')
-    lib_prj.visualize.table_basic(pd_anova_all_lesions_mcp_mass_g, { }, path_analysis_png + 'table2d.png')
-    lib_prj.visualize.table_basic(pd_anova_all_lesions_mcp_mass_perc, { }, path_analysis_png + 'table2e.png')
+    lib_prj.visualize.table_basic(pd_anova_all_lesions_mass_lv_g, path_analysis_png + 'table2c.png')
+    lib_prj.visualize.table_basic(pd_anova_all_lesions_mcp_mass_g, path_analysis_png + 'table2d.png')
+    lib_prj.visualize.table_basic(pd_anova_all_lesions_mcp_mass_perc, path_analysis_png + 'table2e.png')
     
     pivot_groups = ['mi_type_str',]
     # Make pivot table
@@ -136,7 +136,7 @@ def run(path_wr=''):
     # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
     pd_qsel_pivot = reduce(lambda left,right: pd.merge(left, right, on=pivot_groups,how='outer',), pd_qsel_pivot_list) 
     print(tabulate(pd_qsel_pivot, headers='keys', tablefmt='psql'))
-    lib_prj.visualize.table_basic(pd_qsel_pivot, { }, path_analysis_png + 'table2a.png')
+    lib_prj.visualize.table_basic(pd_qsel_pivot, path_analysis_png + 'table2a.png')
     
     # ------------------------------ VISUALIZE ----------------------------- #
 

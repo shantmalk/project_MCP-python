@@ -96,7 +96,7 @@ def run(path_wr=''):
     # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
     pd_qsel_pivot = reduce(lambda left,right: pd.merge(left, right, on=pivot_groups,how='outer',), pd_qsel_pivot_list) 
     print(tabulate(pd_qsel_pivot.sort_values(by=['id_main_vessel', 'mi_type_str']), headers='keys', tablefmt='psql'))
-    lib_prj.visualize.table_basic(pd_qsel_pivot.sort_values(by=['id_main_vessel', 'mi_type_str']), { }, path_analysis_png + 'table3b.png')
+    lib_prj.visualize.table_basic(pd_qsel_pivot.sort_values(by=['id_main_vessel', 'mi_type_str']), path_analysis_png + 'table3b.png', ['w', '#f1f1f2', '#f1f1f2', '#f1f1f2', '#f1f1f2', 'w', 'w', 'w',])
     
     # ---------------------------- Pivot Table 2 --------------------------- #
     print('================================== {:^20} =================================='.format('All Lesions'))
@@ -130,7 +130,7 @@ def run(path_wr=''):
     # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
     pd_qsel_pivot = reduce(lambda left,right: pd.merge(left, right, on=pivot_groups,how='outer',), pd_qsel_pivot_list) 
     print(tabulate(pd_qsel_pivot, headers='keys', tablefmt='psql'))
-    lib_prj.visualize.table_basic(pd_qsel_pivot, { }, path_analysis_png + 'table3a.png')
+    lib_prj.visualize.table_basic(pd_qsel_pivot, path_analysis_png + 'table3a.png')
     # ------------------------------ VISUALIZE ----------------------------- #
 
     

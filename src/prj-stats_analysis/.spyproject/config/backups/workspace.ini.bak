@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['..\\..\\..\\..\\..\\..\\.spyder-py3\\temp.py', 'qsel_json\\qsel_general.json', 'routines\\routineAim1.py', 'routines\\routineMIType_worstlesion.py', 'lib_prj\\paths.py', 'lib_prj\\parse.py']
+recent_files = ['..\\..\\..\\..\\..\\..\\.spyder-py3\\temp.py', 'routines\\routineAim1.py', 'routines\\routineAim2.py', 'lib_prj\\visualize.py', 'qsel_json\\qsel_mi_versus_nomi.json', 'lib_prj\\process.py']
 

@@ -16,7 +16,7 @@ import six
 
 
 # TABLES
-def table_basic(pd_data, args, fpath):
+def table_basic(pd_data, fpath, row_colors=['#f1f1f2', 'w'], **kwargs):
     '''
     
 
@@ -38,7 +38,7 @@ def table_basic(pd_data, args, fpath):
     # SETUP AXIS:
     pd_data = pd_data.round(2) 
     pd_data = table_merge_mean_std(pd_data)
-    ax = render_mpl_table(pd_data, header_columns=0, col_width=3.0)
+    ax = render_mpl_table(pd_data, header_columns=0, col_width=3.0, row_colors=row_colors)
     plt.savefig(fpath)
 
 
@@ -118,6 +118,7 @@ def table_merge_mean_std(pd_data):
     pd_data_merged = pd_data
     cols = list(filter(lambda x: (x.find('_std') > -1 or x.find('_mean') > -1), list(pd_data_merged.columns)))
     cols_cleaned = list(set(x.replace('_std','').replace('_mean','') for x in cols))
+    cols_cleaned.sort()
     for ii in range(len(cols_cleaned)):
         col_lbl_mean = cols_cleaned[ii] + '_mean'
         col_lbl_std = cols_cleaned[ii] + '_std'
