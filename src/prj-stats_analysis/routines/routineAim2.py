@@ -13,6 +13,7 @@ import numpy as np
 from tabulate import tabulate
 from functools import reduce
 from plotly.offline import plot
+from collections import defaultdict as ddict
 
 
 def run(path_wr=''):
@@ -61,10 +62,19 @@ def run(path_wr=''):
     vals = ['STEMI', 'NSTEMI', 'IND', 'UA', 'No MI']
     
     pd_qsel_data['mi_type_str'] = np.select(conds, vals)
-        
+    
+    # -------------- Calculate p-values, per-vessel grouping --------------- #
+    pd_p_val_lv_mass = ddict()
+    pd_p_val_mass_mcp_g = ddict()
+    pd_p_val_mass_mcp_perc = ddict()
+    
     anova_grps_a = ['lesion_lad', 'lesion_lcx', 'lesion_rca', ]
     anova_grps_b = ['mi_type_stemi', 'mi_type_nstemi', 'mi_type_uangina', 'mi_type_unknown', 'mi_type_none', ]
     for ii in range(len(anova_grps_a)):
+        pd_p_val_lv_mass[anova_grps_a[ii]] = lib_prj.process.stats_anova(pd_qsel_data.loc[pd_qsel_data[anova_grps_a[ii]] == 1], anova_grps_b, 'mass_lv_g')
+        pd_p_val_mass_mcp_g[anova_grps_a[ii]] = lib_prj.process.stats_anova(pd_qsel_data.loc[pd_qsel_data[anova_grps_a[ii]] == 1], anova_grps_b, 'mass_mcp_g')
+        pd_p_val_mass_mcp_perc[anova_grps_a[ii]] = lib_prj.process.stats_anova(pd_qsel_data.loc[pd_qsel_data[anova_grps_a[ii]] == 1], anova_grps_b, 'mass_mcp_perc')
+        
         print('================================== {:^20} =================================='.format(anova_grps_a[ii]))
         print('ANOVA -------- LV Mass ----------- ')
         print(lib_prj.process.stats_anova(pd_qsel_data.loc[pd_qsel_data[anova_grps_a[ii]] == 1], anova_grps_b, 'mass_lv_g'))
@@ -75,6 +85,27 @@ def run(path_wr=''):
         print('ANOVA -------- MCP Mass (%) ------ ')
         print(lib_prj.process.stats_anova(pd_qsel_data.loc[pd_qsel_data[anova_grps_a[ii]] == 1], anova_grps_b, 'mass_mcp_perc'))
         print()
+    
+    # -------------- Calculate p-values, all-vessel grouping --------------- #
+    print('================================== {:^20} =================================='.format('All Lesions'))
+    print('ANOVA -------- LV Mass ----------- ')
+    pd_anova_all_lesions_mass_lv_g = lib_prj.process.stats_anova(pd_qsel_data, anova_grps_b, 'mass_lv_g')
+    print(pd_anova_all_lesions_mass_lv_g)
+    print()
+    print('ANOVA -------- MCP Mass (g) ------ ')
+    pd_anova_all_lesions_mcp_mass_g = lib_prj.process.stats_anova(pd_qsel_data, anova_grps_b, 'mass_mcp_g')
+    print(pd_anova_all_lesions_mcp_mass_g)
+    print()
+    print('ANOVA -------- MCP Mass (%) ------ ')
+    pd_anova_all_lesions_mcp_mass_perc = lib_prj.process.stats_anova(pd_qsel_data, anova_grps_b, 'mass_mcp_perc')
+    print(pd_anova_all_lesions_mcp_mass_perc)
+    print()
+    
+    # ------------------------- Save p-value tables ------------------------ #
+    lib_prj.visualize.table_pvalues({'lesions_all' : pd_anova_all_lesions_mcp_mass_g}, path_analysis_png + 'p_val-figure3a.png')
+    lib_prj.visualize.table_pvalues({'lesions_all' : pd_anova_all_lesions_mcp_mass_perc}, path_analysis_png + 'p_val-figure3b.png')
+    lib_prj.visualize.table_pvalues(pd_p_val_mass_mcp_g, path_analysis_png + 'p_val-figure3c.png')
+    lib_prj.visualize.table_pvalues(pd_p_val_mass_mcp_perc, path_analysis_png + 'p_val-figure3d.png')
     
     # ---------------------------- Pivot Table 1 --------------------------- #
     pivot_groups = ['mi_type_str', 'id_main_vessel']
@@ -99,18 +130,6 @@ def run(path_wr=''):
     lib_prj.visualize.table_basic(pd_qsel_pivot.sort_values(by=['id_main_vessel', 'mi_type_str']), path_analysis_png + 'table3b.png', ['w', '#f1f1f2', '#f1f1f2', '#f1f1f2', '#f1f1f2', 'w', 'w', 'w',])
     
     # ---------------------------- Pivot Table 2 --------------------------- #
-    print('================================== {:^20} =================================='.format('All Lesions'))
-    print('ANOVA -------- LV Mass ----------- ')
-    print(lib_prj.process.stats_anova(pd_qsel_data, anova_grps_b, 'mass_lv_g'))
-    print()
-    print('ANOVA -------- MCP Mass (g) ------ ')
-    print(lib_prj.process.stats_anova(pd_qsel_data, anova_grps_b, 'mass_mcp_g'))
-    print()
-    print('ANOVA -------- MCP Mass (%) ------ ')
-    print(lib_prj.process.stats_anova(pd_qsel_data, anova_grps_b, 'mass_mcp_perc'))
-    print()
-    
-    
     pivot_groups = ['mi_type_str',]
     # Make pivot table
     pd_qsel_pivot_totals = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=len, values=['confirm_idc_str'])

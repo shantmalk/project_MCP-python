@@ -106,7 +106,7 @@ def run(path_wr=''):
     lib_prj.visualize.table_pvalues(pd_p_val_mass_mcp_g, path_analysis_png + 'p_val-figure2c.png')
     lib_prj.visualize.table_pvalues(pd_p_val_mass_mcp_perc, path_analysis_png + 'p_val-figure2d.png')
     
-    
+    # TODO:  FUNCTIONALIZE PIVOT TABLE BLOCKS
     # ---------------------------- Pivot Table 1 --------------------------- #
     pivot_groups = ['mi_type_str', 'id_main_vessel']
     # Make pivot table
