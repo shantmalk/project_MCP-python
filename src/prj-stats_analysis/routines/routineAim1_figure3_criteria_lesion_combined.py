@@ -75,7 +75,7 @@ def run(path_wr=''):
         (pd_qsel_data['mi_event'] == 0),
         ]
     
-    vals = ['STEMI', 'NSTEMI', 'IND', 'UA', 'No MI']
+    vals = ['STEMI', 'NSTEMI', 'UND', 'UA', 'No MI']
     
     pd_qsel_data['mi_type_str'] = np.select(conds, vals)
     
@@ -187,8 +187,8 @@ def run(path_wr=''):
     # ------------------------------ FIGURE 2A ----------------------------- #
     figure_label = 'Figure 3A'
     y_data = 'mass_mcp_g'
-    y_label = 'MAAR<sub>MCP (absolute)</sub> (g)'
-    title =  figure_label + ': Box plot of MAAR<sub>MCP (abs)</sub> of MI types'
+    y_label = 'MMAR<sub>MCP (absolute)</sub> (g)'
+    title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of MI types'
     
     figure_fname_label = figure_label.lower().replace(' ', '')
     args_plotly['y'] = [y_data]
@@ -205,8 +205,8 @@ def run(path_wr=''):
     # ------------------------------- PLOT 2B ------------------------------- #
     figure_label = 'Figure 3B'
     y_data = 'mass_mcp_perc'
-    y_label = 'MAAR<sub>MCP (relative)</sub> (%)'
-    title =  figure_label + ': Box plot of MAAR<sub>MCP (rel)</sub> of MI types'
+    y_label = 'MMAR<sub>MCP (relative)</sub> (%)'
+    title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of MI types'
     
     figure_fname_label = figure_label.lower().replace(' ', '')
     args_plotly['y'] = [y_data]
@@ -234,9 +234,9 @@ def run(path_wr=''):
     # ------------------------------ FIGURE 2C ----------------------------- #
     figure_label = 'Figure 3C'
     y_data = 'mass_mcp_g'
-    y_label = 'MAAR<sub>MCP (absolute)</sub> (g)'
+    y_label = 'MMAR<sub>MCP (absolute)</sub> (g)'
     x_label = 'Main Coronary Artery Lesion'
-    title =  figure_label + ': Box plot of MAAR<sub>MCP (abs)</sub> of MI types - per main coronary artery'
+    title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of MI types - per main coronary artery'
     
     
     figure_fname_label = figure_label.lower().replace(' ', '')
@@ -252,9 +252,9 @@ def run(path_wr=''):
     # ------------------------------- PLOT 2D ------------------------------- #
     figure_label = 'Figure 3D'
     y_data = 'mass_mcp_perc'
-    y_label = 'MAAR<sub>MCP (relative)</sub> (%)'
+    y_label = 'MMAR<sub>MCP (relative)</sub> (%)'
     x_label = 'Main Coronary Artery Lesion'
-    title =  figure_label + ': Box plot of MAAR<sub>MCP (rel)</sub> of MI types - per main coronary artery'
+    title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of MI types - per main coronary artery'
     
     
     figure_fname_label = figure_label.lower().replace(' ', '')

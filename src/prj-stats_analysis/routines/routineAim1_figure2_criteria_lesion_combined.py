@@ -186,8 +186,8 @@ def run(path_wr=''):
     # ------------------------------ FIGURE 2A ----------------------------- #
     figure_label = 'Figure 2A'
     y_data = 'mass_mcp_g'
-    y_label = 'MAAR<sub>MCP (absolute)</sub> (g)'
-    title =  figure_label + ': Box plot of MAAR<sub>MCP (abs)</sub> of MI and no MI groups'
+    y_label = 'MMAR<sub>MCP (absolute)</sub> (g)'
+    title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of MI and no MI groups'
     
     figure_fname_label = figure_label.lower().replace(' ', '')
     args_plotly['y'] = [y_data]
@@ -204,8 +204,8 @@ def run(path_wr=''):
     # ------------------------------- PLOT 2B ------------------------------- #
     figure_label = 'Figure 2B'
     y_data = 'mass_mcp_perc'
-    y_label = 'MAAR<sub>MCP (relative)</sub> (%)'
-    title =  figure_label + ': Box plot of MAAR<sub>MCP (rel)</sub> of MI and no MI groups'
+    y_label = 'MMAR<sub>MCP (relative)</sub> (%)'
+    title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of MI and no MI groups'
     
     figure_fname_label = figure_label.lower().replace(' ', '')
     args_plotly['y'] = [y_data]
@@ -233,9 +233,9 @@ def run(path_wr=''):
     # ------------------------------ FIGURE 2C ----------------------------- #
     figure_label = 'Figure 2C'
     y_data = 'mass_mcp_g'
-    y_label = 'MAAR<sub>MCP (absolute)</sub> (g)'
+    y_label = 'MMAR<sub>MCP (absolute)</sub> (g)'
     x_label = 'Main Coronary Artery Lesion'
-    title =  figure_label + ': Box plot of MAAR<sub>MCP (abs)</sub> of MI and no MI groups - per main coronary artery'
+    title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of MI and no MI groups - per main coronary artery'
     
     
     figure_fname_label = figure_label.lower().replace(' ', '')
@@ -251,9 +251,9 @@ def run(path_wr=''):
     # ------------------------------- PLOT 2D ------------------------------- #
     figure_label = 'Figure 2D'
     y_data = 'mass_mcp_perc'
-    y_label = 'MAAR<sub>MCP (relative)</sub> (%)'
+    y_label = 'MMAR<sub>MCP (relative)</sub> (%)'
     x_label = 'Main Coronary Artery Lesion'
-    title =  figure_label + ': Box plot of MAAR<sub>MCP (rel)</sub> of MI and no MI groups - per main coronary artery'
+    title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of MI and no MI groups - per main coronary artery'
     
     
     figure_fname_label = figure_label.lower().replace(' ', '')
