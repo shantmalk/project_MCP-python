@@ -15,6 +15,11 @@ import numpy as np
 import pandas as pd
 import six
 
+# For ROC
+from itertools import cycle
+from sklearn.metrics import roc_curve, auc
+from matplotlib import cm
+
 
 # TABLES
 def table_basic(pd_data, fpath, row_colors=['#f1f1f2', 'w'], **kwargs):
@@ -176,6 +181,55 @@ def table_merge_mean_std(pd_data):
 
 
 # GRAPHS
+
+def roc_plot(pd_data, outcome_var, predictor_vars):
+    '''
+    
+
+    Parameters
+    ----------
+    pd_data : TYPE
+        DESCRIPTION.
+    outcome_var : TYPE
+        DESCRIPTION.
+    predictor_vars : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    '''
+    
+    # CALCULATE ROC PLOTS
+    fpr = dict()
+    tpr = dict()
+    roc_auc = dict()
+    for i in range(len(predictor_vars)):
+        fpr[i], tpr[i], _ = roc_curve(pd_data[outcome_var], pd_data[predictor_vars[i]])
+        roc_auc[i] = auc(fpr[i], tpr[i])
+    
+    # VISUALIZE
+    plt.figure()
+    lw = 2
+    
+    colors = cycle(['aqua', 'darkorange', 'cornflowerblue'])
+    
+    viridis = cm.get_cmap('viridis', len(predictor_vars))
+    colors = viridis(range(len(predictor_vars)))
+    for ii, color in zip(range(len(predictor_vars)), colors):
+        plt.plot(fpr[ii], tpr[ii], color=color,
+                 lw=lw, label='{PRED_VAR} (area = {AUC:0.2f})'.format(PRED_VAR=predictor_vars[ii], AUC=roc_auc[ii]))
+    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.0])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver operating characteristic example')
+    plt.legend(loc="lower right")
+    return plt
+    
+
 def plot_plotly(fig, filename):
     lib_prj.paths.make_directory(lib_prj.paths.PATH_PLOTLY_TEMP)
     plt = plot(fig, filename=lib_prj.paths.PATH_PLOTLY_TEMP + filename)

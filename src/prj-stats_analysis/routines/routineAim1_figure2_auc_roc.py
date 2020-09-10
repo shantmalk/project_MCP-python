@@ -131,12 +131,12 @@ def run(path_wr=''):
     pd_qsel_pivot_totals.columns = ['total_lesions']
     pd_qsel_pivot_totals.reset_index(inplace=True)
     
-    pd_qsel_pivot_mean = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc="mean", values=['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc'])
-    pd_qsel_pivot_mean.columns = [x + '_mean' for x in ['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc']]
+    pd_qsel_pivot_mean = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc="mean", values=['mass_mcp_perc', 'mass_mcp_g', 'omlddistance', 'plaquecomposition', 'lesion_length', 'lumenvolume_lesion', 'lumenareastenosis', 'lumenminimaldiameter', 'lumendiameterstenosis', 'plaquevolume_lesion'])
+    pd_qsel_pivot_mean.columns = [x + '_mean' for x in ['mass_mcp_perc', 'mass_mcp_g', 'omlddistance', 'plaquecomposition', 'lesion_length', 'lumenvolume_lesion', 'lumenareastenosis', 'lumenminimaldiameter', 'lumendiameterstenosis', 'plaquevolume_lesion']]
     pd_qsel_pivot_mean.reset_index(inplace=True)
     
-    pd_qsel_pivot_std = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=np.std, values=['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc'])
-    pd_qsel_pivot_std.columns = [x + '_std' for x in ['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc']]
+    pd_qsel_pivot_std = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=np.std, values=['mass_mcp_perc', 'mass_mcp_g', 'omlddistance', 'plaquecomposition', 'lesion_length', 'lumenvolume_lesion', 'lumenareastenosis', 'lumenminimaldiameter', 'lumendiameterstenosis', 'plaquevolume_lesion'])
+    pd_qsel_pivot_std.columns = [x + '_std' for x in ['mass_mcp_perc', 'mass_mcp_g', 'omlddistance', 'plaquecomposition', 'lesion_length', 'lumenvolume_lesion', 'lumenareastenosis', 'lumenminimaldiameter', 'lumendiameterstenosis', 'plaquevolume_lesion']]
     pd_qsel_pivot_std.reset_index(inplace=True)
     
     # Merge pivot tables
@@ -153,12 +153,12 @@ def run(path_wr=''):
     pd_qsel_pivot_totals.columns = ['total_lesions']
     pd_qsel_pivot_totals.reset_index(inplace=True)
     
-    pd_qsel_pivot_mean = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc="mean", values=['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc'])
-    pd_qsel_pivot_mean.columns = [x + '_mean' for x in ['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc']]
+    pd_qsel_pivot_mean = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc="mean", values=['mass_mcp_perc', 'mass_mcp_g', 'omlddistance', 'plaquecomposition', 'lesion_length', 'lumenvolume_lesion', 'lumenareastenosis', 'lumenminimaldiameter', 'lumendiameterstenosis', 'plaquevolume_lesion'])
+    pd_qsel_pivot_mean.columns = [x + '_mean' for x in ['mass_mcp_perc', 'mass_mcp_g', 'omlddistance', 'plaquecomposition', 'lesion_length', 'lumenvolume_lesion', 'lumenareastenosis', 'lumenminimaldiameter', 'lumendiameterstenosis', 'plaquevolume_lesion']]
     pd_qsel_pivot_mean.reset_index(inplace=True)
     
-    pd_qsel_pivot_std = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=np.std, values=['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc'])
-    pd_qsel_pivot_std.columns = [x + '_std' for x in ['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc']]
+    pd_qsel_pivot_std = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=np.std, values=['mass_mcp_perc', 'mass_mcp_g', 'omlddistance', 'plaquecomposition', 'lesion_length', 'lumenvolume_lesion', 'lumenareastenosis', 'lumenminimaldiameter', 'lumendiameterstenosis', 'plaquevolume_lesion'])
+    pd_qsel_pivot_std.columns = [x + '_std' for x in ['mass_mcp_perc', 'mass_mcp_g', 'omlddistance', 'plaquecomposition', 'lesion_length', 'lumenvolume_lesion', 'lumenareastenosis', 'lumenminimaldiameter', 'lumendiameterstenosis', 'plaquevolume_lesion']]
     pd_qsel_pivot_std.reset_index(inplace=True)
     
     # Merge pivot tables
@@ -174,105 +174,31 @@ def run(path_wr=''):
     # FIGURES:
     lib_prj.paths.make_directory(path_wr) 
 
-    # ------------------------- FIGURE 2A-B PARAMS ------------------------- #
-    pd_qsel_data = pd_qsel_data.sort_values(by='mi_type')
-    args_plotly = {
-        'x' : 'mi_type_str',
-        'points' : 'all',
-        'color' : 'mi_type_str',
-        'labels' : {'mi_type_str' : 'MI Type'},
-        }
-    
-    # ------------------------------ FIGURE 2A ----------------------------- #
-    figure_label = 'Figure 2A'
-    y_data = 'mass_mcp_g'
-    y_label = 'MMAR<sub>MCP (absolute)</sub> (g)'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of MI and no MI groups'
-    
-    figure_fname_label = figure_label.lower().replace(' ', '')
-    args_plotly['y'] = [y_data]
-    args_plotly['title'] = title
-    fig = lib_prj.visualize.boxplot_plotly(pd_qsel_data, args_plotly, '')
-    fig.update_yaxes(title=y_label)
-    
-    fig.update_layout(showlegend=False)
-    
-    # Save file if path specified
-    plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
-    fig.write_image(path_analysis_png + figure_fname_label + '.png')
-    
-    # ------------------------------- PLOT 2B ------------------------------- #
-    figure_label = 'Figure 2B'
-    y_data = 'mass_mcp_perc'
-    y_label = 'MMAR<sub>MCP (relative)</sub> (%)'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of MI and no MI groups'
-    
-    figure_fname_label = figure_label.lower().replace(' ', '')
-    args_plotly['y'] = [y_data]
-    args_plotly['title'] = title
-    fig = lib_prj.visualize.boxplot_plotly(pd_qsel_data, args_plotly, '')
-    fig.update_yaxes(title=y_label)
-    
-    fig.update_layout(showlegend=False)
-    
-    # Save file if path specified
-    plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
-    fig.write_image(path_analysis_png + figure_fname_label + '.png')
-    
-    
-    
-    # ------------------------- FIGURE 2C-D PARAMS ------------------------- #
-    pd_qsel_data = pd_qsel_data.sort_values(by='mi_type')
-    args_plotly = {
-        'x' : 'id_main_vessel',
-        'points' : 'all',
-        'color' : 'mi_type_str',
-        'labels' : {'mi_type_str' : 'MI Type'},
-        }
-    
-    # ------------------------------ FIGURE 2C ----------------------------- #
-    figure_label = 'Figure 2C'
-    y_data = 'mass_mcp_g'
-    y_label = 'MMAR<sub>MCP (absolute)</sub> (g)'
-    x_label = 'Main Coronary Artery Lesion'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of MI and no MI groups - per main coronary artery'
-    
-    
-    figure_fname_label = figure_label.lower().replace(' ', '')
-    args_plotly['y'] = [y_data]
-    args_plotly['title'] = title
-    fig = lib_prj.visualize.boxplot_plotly(pd_qsel_data, args_plotly, '')
-    fig.update_yaxes(title=y_label)
-    fig.update_xaxes(title=x_label)
-    # Save file if path specified
-    plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
-    fig.write_image(path_analysis_png + figure_fname_label + '.png')
-    
-    # ------------------------------- PLOT 2D ------------------------------- #
-    figure_label = 'Figure 2D'
-    y_data = 'mass_mcp_perc'
-    y_label = 'MMAR<sub>MCP (relative)</sub> (%)'
-    x_label = 'Main Coronary Artery Lesion'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of MI and no MI groups - per main coronary artery'
-    
-    
-    figure_fname_label = figure_label.lower().replace(' ', '')
-    args_plotly['y'] = [y_data]
-    args_plotly['title'] = title
-    fig = lib_prj.visualize.boxplot_plotly(pd_qsel_data, args_plotly, '')
-    fig.update_yaxes(title=y_label)
-    fig.update_xaxes(title=x_label)
-    # Save file if path specified
-    plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
-    fig.write_image(path_analysis_png + figure_fname_label + '.png')
-    
+    pd_qsel_data['mass_mcp_perc_mld'] = pd_qsel_data['mass_mcp_perc'] / pd_qsel_data['lumenminimaldiameter']
+    pd_qsel_data['mass_mcp_perc_lumenvolume_lesion'] = pd_qsel_data['mass_mcp_perc'] * pd_qsel_data['lumenvolume_lesion']
+    pd_qsel_data['mass_mcp_perc_lesion_length'] = pd_qsel_data['mass_mcp_perc'] * pd_qsel_data['lesion_length']
+    pd_qsel_data['mass_mcp_perc_plaquevolume_lesion'] = pd_qsel_data['mass_mcp_perc'] * pd_qsel_data['plaquevolume_lesion']
     
     # ------------------------------- PLOT 3 -------------------------------- #
-    # figure_label = 'Figure 3'
-    # outcome_var = 'mi_event'
-    # predictor_var = ['mass_mcp_perc', 'mass_mcp_g']
+    figure_label = 'Figure 3'
+    outcome_var = 'mi_event'
+    predictor_var = ['mass_mcp_perc', 'mass_mcp_g', 'omlddistance', 'plaquecomposition', 'lesion_length', 'lumenvolume_lesion', 'lumenareastenosis', 'lumenminimaldiameter', 'lumendiameterstenosis', 'plaquevolume_lesion']
     
-    # fig = lib_prj.visualize.roc_plot(pd_qsel_data, outcome_var, predictor_var)
+    figure_fname_label = figure_label.lower().replace(' ', '')
+    fig = lib_prj.visualize.roc_plot(pd_qsel_data, outcome_var, predictor_var)
+    fig.title(figure_label)
+    fig.savefig(path_analysis_png + figure_fname_label + '.png', bbox_inches='tight')
+    fig.show()
     
+    # ------------------------------- PLOT 3 -------------------------------- #
+    figure_label = 'Figure 3_combined'
+    outcome_var = 'mi_event'
+    predictor_var = ['mass_mcp_perc_mld', 'mass_mcp_perc_lumenvolume_lesion',  'mass_mcp_perc_lesion_length', 'mass_mcp_perc_plaquevolume_lesion']
+    
+    figure_fname_label = figure_label.lower().replace(' ', '')
+    fig = lib_prj.visualize.roc_plot(pd_qsel_data, outcome_var, predictor_var)
+    fig.title(figure_label)
+    fig.savefig(path_analysis_png + figure_fname_label + '.png', bbox_inches='tight')
+    fig.show()
 if __name__ == '__main__':
    pd_test = run()
