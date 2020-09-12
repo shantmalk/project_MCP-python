@@ -19,7 +19,7 @@ from collections import defaultdict as ddict
 def run(path_wr=''):
     '''
     RESULTS ANALYSIS
-    WORST_LESION FIELD USED TO SELECT CULPRIT LESION IN MI GROUP
+    icalesionverified FIELD USED TO SELECT CULPRIT LESION IN MI GROUP
     WORST_LESION FIELD USED TO SELECT POSSIBLE CULPRIT LESION IN NON-MI GROUP
     
     INPUTS
@@ -29,7 +29,7 @@ def run(path_wr=''):
     path_analysis_png = lib_prj.paths.PATH_ANALYSIS + 'results-09052020-figs/png/'
     path_analysis_html = lib_prj.paths.PATH_ANALYSIS + 'results-09052020-figs/html/'
     
-    lib_prj.visualize.print_label('routineAim2')
+    lib_prj.visualize.print_label('routineAim4')
     
     # ------------------------------- PARSE -------------------------------- #
     
@@ -97,8 +97,8 @@ def run(path_wr=''):
     # -------------- Calculate p-values, all-vessel grouping --------------- #
     print('================================== {:^20} =================================='.format('All Lesions'))
     print('ANOVA -------- LV Mass ----------- ')
-    pd_anova_all_lesions_mass_lv_g = lib_prj.process.stats_anova(pd_qsel_data, anova_grps_b, 'mass_lv_g')
-    print(pd_anova_all_lesions_mass_lv_g)
+    pd_anova_all_lesions_omlddistance = lib_prj.process.stats_anova(pd_qsel_data, anova_grps_b, 'omlddistance')
+    print(pd_anova_all_lesions_omlddistance)
     print()
     print('ANOVA -------- MCP Mass (g) ------ ')
     pd_anova_all_lesions_mcp_mass_g = lib_prj.process.stats_anova(pd_qsel_data, anova_grps_b, 'mass_mcp_g')
@@ -110,24 +110,25 @@ def run(path_wr=''):
     print()
     
     # ------------------------- Save p-value tables ------------------------ #
-    lib_prj.visualize.table_pvalues({'lesions_all' : pd_anova_all_lesions_mcp_mass_g}, path_analysis_png + 'p_val-figure4a.png')
+    lib_prj.visualize.table_pvalues({'omldistance' : pd_anova_all_lesions_omlddistance}, path_analysis_png + 'p_val-figure4a.png')
     lib_prj.visualize.table_pvalues({'lesions_all' : pd_anova_all_lesions_mcp_mass_perc}, path_analysis_png + 'p_val-figure4b.png')
     lib_prj.visualize.table_pvalues(pd_p_val_mass_mcp_g, path_analysis_png + 'p_val-figure4c.png')
     lib_prj.visualize.table_pvalues(pd_p_val_mass_mcp_perc, path_analysis_png + 'p_val-figure4d.png')
     
     # ---------------------------- Pivot Table 1 --------------------------- #
     pivot_groups = ['mi_type_str', 'lesion_culprit_str']
+    params = ['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc', 'omlddistance', 'fibrousvolume_lesion', 'lumenminimaldiameter', 'vesselwallarea']
     # Make pivot table
     pd_qsel_pivot_totals = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=len, values=['confirm_idc_str'])
     pd_qsel_pivot_totals.columns = ['total_lesions']
     pd_qsel_pivot_totals.reset_index(inplace=True)
     
-    pd_qsel_pivot_mean = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc="mean", values=['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc'])
-    pd_qsel_pivot_mean.columns = [x + '_mean' for x in ['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc']]
+    pd_qsel_pivot_mean = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc="mean", values=params)
+    pd_qsel_pivot_mean.columns = [x + '_mean' for x in params]
     pd_qsel_pivot_mean.reset_index(inplace=True)
     
-    pd_qsel_pivot_std = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=np.std, values=['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc'])
-    pd_qsel_pivot_std.columns = [x + '_std' for x in ['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc']]
+    pd_qsel_pivot_std = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=np.std, values=params)
+    pd_qsel_pivot_std.columns = [x + '_std' for x in params]
     pd_qsel_pivot_std.reset_index(inplace=True)
     
     # Merge pivot tables
@@ -135,21 +136,23 @@ def run(path_wr=''):
     # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
     pd_qsel_pivot = reduce(lambda left,right: pd.merge(left, right, on=pivot_groups,how='outer',), pd_qsel_pivot_list) 
     print(tabulate(pd_qsel_pivot.sort_values(by=['mi_type_str', 'lesion_culprit_str']), headers='keys', tablefmt='psql'))
-    lib_prj.visualize.table_basic(pd_qsel_pivot.sort_values(by=['mi_type_str', 'lesion_culprit_str']), path_analysis_png + 'table4b.png', ['w', '#f1f1f2', '#f1f1f2', 'w',])
+    
+    # lib_prj.visualize.table_basic(pd_qsel_pivot.sort_values(by=['mi_type_str', 'lesion_culprit_str']), path_analysis_png + 'table4b.png', ['w', '#f1f1f2', '#f1f1f2', 'w',])
     
     # ---------------------------- Pivot Table 2 --------------------------- #
     pivot_groups = ['lesion_culprit_str',]
+    params = ['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc', 'omlddistance', 'fibrousvolume_lesion', 'lumenminimaldiameter', 'vesselwallarea']
     # Make pivot table
     pd_qsel_pivot_totals = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=len, values=['confirm_idc_str'])
     pd_qsel_pivot_totals.columns = ['total_lesions']
     pd_qsel_pivot_totals.reset_index(inplace=True)
     
-    pd_qsel_pivot_mean = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc="mean", values=['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc'])
-    pd_qsel_pivot_mean.columns = [x + '_mean' for x in ['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc']]
+    pd_qsel_pivot_mean = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc="mean", values=params)
+    pd_qsel_pivot_mean.columns = [x + '_mean' for x in params]
     pd_qsel_pivot_mean.reset_index(inplace=True)
     
-    pd_qsel_pivot_std = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=np.std, values=['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc'])
-    pd_qsel_pivot_std.columns = [x + '_std' for x in ['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc']]
+    pd_qsel_pivot_std = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=np.std, values=params)
+    pd_qsel_pivot_std.columns = [x + '_std' for x in params]
     pd_qsel_pivot_std.reset_index(inplace=True)
     
     # Merge pivot tables
@@ -157,18 +160,15 @@ def run(path_wr=''):
     # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
     pd_qsel_pivot = reduce(lambda left,right: pd.merge(left, right, on=pivot_groups,how='outer',), pd_qsel_pivot_list) 
     print(tabulate(pd_qsel_pivot, headers='keys', tablefmt='psql'))
-    lib_prj.visualize.table_basic(pd_qsel_pivot, path_analysis_png + 'table4a.png')
     
+    # lib_prj.visualize.table_basic(pd_qsel_pivot, path_analysis_png + 'table4a.png')
     
     # ------------------------------ VISUALIZE ----------------------------- #
 
     
     # FIGURES:
     lib_prj.paths.make_directory(path_wr) 
-    
-    
-    
-    
+
     # ------------------------- FIGURE 2A-B PARAMS ------------------------- #
     pd_qsel_data = pd_qsel_data.sort_values(by=['lesion_culprit_str', 'mi_type'])
     args_plotly = {
@@ -181,11 +181,11 @@ def run(path_wr=''):
     # ------------------------------ FIGURE 2A ----------------------------- #
     figure_label = 'Figure 4A'
     y_data = 'mass_mcp_g'
-    y_label = 'MMAR<sub>MCP (absolute)</sub> (g)'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of culprit and non-culprit lesions'
+    y_label = 'Distance (mm)'
+    title =  figure_label + ': Box plot of ostium-to-MLD distance of culprit and non-culprit lesions'
     
     figure_fname_label = figure_label.lower().replace(' ', '')
-    args_plotly['y'] = [y_data]
+    args_plotly['y'] = ['omlddistance']#, 'plaquecomposition', 'lumenminimaldiameter']
     args_plotly['title'] = title
     fig = lib_prj.visualize.boxplot_plotly(pd_qsel_data, args_plotly, '')
     fig.update_yaxes(title=y_label)
@@ -194,25 +194,7 @@ def run(path_wr=''):
     
     # Save file if path specified
     plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
-    fig.write_image(path_analysis_png + figure_fname_label + '.png')
-    
-    # ------------------------------- PLOT 2B ------------------------------- #
-    figure_label = 'Figure 4B'
-    y_data = 'mass_mcp_perc'
-    y_label = 'MMAR<sub>MCP (relative)</sub> (%)'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of culprit and non-culprit lesions'
-    
-    figure_fname_label = figure_label.lower().replace(' ', '')
-    args_plotly['y'] = [y_data]
-    args_plotly['title'] = title
-    fig = lib_prj.visualize.boxplot_plotly(pd_qsel_data, args_plotly, '')
-    fig.update_yaxes(title=y_label)
-    
-    fig.update_layout(showlegend=False)
-    
-    # Save file if path specified
-    plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
-    fig.write_image(path_analysis_png + figure_fname_label + '.png')
+    # fig.write_image(path_analysis_png + figure_fname_label + '.png')
     
     
     # ------------------------- FIGURE 2C-D PARAMS ------------------------- #
@@ -240,25 +222,7 @@ def run(path_wr=''):
     fig.update_xaxes(title=x_label)
     # Save file if path specified
     plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
-    fig.write_image(path_analysis_png + figure_fname_label + '.png')
+    # fig.write_image(path_analysis_png + figure_fname_label + '.png')
     
-    # ------------------------------- PLOT 2D ------------------------------- #
-    figure_label = 'Figure 4D'
-    y_data = 'mass_mcp_perc'
-    y_label = 'MMAR<sub>MCP (relative)</sub> (%)'
-    x_label = 'MI Type'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of culprit and non-culprit lesions'
-    
-    
-    figure_fname_label = figure_label.lower().replace(' ', '')
-    args_plotly['y'] = [y_data]
-    args_plotly['title'] = title
-    fig = lib_prj.visualize.boxplot_plotly(pd_qsel_data, args_plotly, '')
-    fig.update_yaxes(title=y_label)
-    fig.update_xaxes(title=x_label)
-    # Save file if path specified
-    plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
-    fig.write_image(path_analysis_png + figure_fname_label + '.png')
-        
 if __name__ == '__main__':
    pd_test = run()

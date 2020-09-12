@@ -3,5 +3,9 @@ import routines.routineGeneral_status as routineGeneral_status
 import routines.routineGeneral_error as routineGeneral_error
 import routines.routineMIType_worstlesion as routineMIType_worstlesion
 import routines.routineMIvNoMI_worstlesion as routineMIvNoMI_worstlesion
+import routines.routineAim1_figure2_criteria_lesion_combined as routineAim1_figure2
+import routines.routineAim1_figure3_criteria_lesion_combined as routineAim1_figure3
+import routines.routineAim2_figure4_icaverifiedculprit as routineAim2_figure4
+import routines.routineAim3_figure5_icaverified_worstlesion as routineAim3_figure5
 
 # ADD ADDT ROUTINES BELOW

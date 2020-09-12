@@ -20,6 +20,11 @@ from itertools import cycle
 from sklearn.metrics import roc_curve, auc
 from matplotlib import cm
 
+# For survival curve
+from lifelines import KaplanMeierFitter
+from lifelines import NelsonAalenFitter
+from lifelines import CoxPHFitter
+from lifelines.statistics import logrank_test
 
 # TABLES
 def table_basic(pd_data, fpath, row_colors=['#f1f1f2', 'w'], **kwargs):
@@ -204,31 +209,126 @@ def roc_plot(pd_data, outcome_var, predictor_vars):
     # CALCULATE ROC PLOTS
     fpr = dict()
     tpr = dict()
+    thresh = dict()
     roc_auc = dict()
     for i in range(len(predictor_vars)):
-        fpr[i], tpr[i], _ = roc_curve(pd_data[outcome_var], pd_data[predictor_vars[i]])
+        fpr[i], tpr[i], thresh[i] = roc_curve(pd_data[outcome_var], pd_data[predictor_vars[i]])
         roc_auc[i] = auc(fpr[i], tpr[i])
+    
+    # COMBINE DICTIONARIES INTO PD ARRAYS:
+    roc_tbls = dict()
+    for p_var in predictor_vars:
+        roc_tbls[p_var] = pd.DataFrame()
+        roc_tbls[p_var]['fpr'], roc_tbls[p_var]['tpr'], roc_tbls[p_var]['thresh'] = roc_curve(pd_data[outcome_var], pd_data[p_var])
+        roc_tbls[p_var]['auc'] = auc(roc_tbls[p_var]['fpr'], roc_tbls[p_var]['tpr'])
+        roc_tbls[p_var]['predictor_var'] = p_var
     
     # VISUALIZE
     plt.figure()
     lw = 2
-    
-    colors = cycle(['aqua', 'darkorange', 'cornflowerblue'])
-    
-    viridis = cm.get_cmap('viridis', len(predictor_vars))
+        
+    viridis = cm.get_cmap('Paired', len(predictor_vars))
     colors = viridis(range(len(predictor_vars)))
-    for ii, color in zip(range(len(predictor_vars)), colors):
-        plt.plot(fpr[ii], tpr[ii], color=color,
-                 lw=lw, label='{PRED_VAR} (area = {AUC:0.2f})'.format(PRED_VAR=predictor_vars[ii], AUC=roc_auc[ii]))
+    for p_var, color in zip(predictor_vars, colors):
+        plt.plot(roc_tbls[p_var]['fpr'], roc_tbls[p_var]['tpr'], color=color,
+                 lw=lw, label='{PRED_VAR} (area = {AUC:0.2f})'.format(PRED_VAR=p_var, AUC=roc_tbls[p_var]['auc'][0]))
     plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.0])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Receiver operating characteristic example')
+    plt.xlabel('1 - Specificity')
+    plt.ylabel('Sensitivity')
     plt.legend(loc="lower right")
-    return plt
     
+    # COMBINE ROC_TBLS INTO ONE ARRAY
+    roc_pd = pd.DataFrame()
+    for p_var in predictor_vars:
+        roc_pd = pd.concat([roc_pd, roc_tbls[p_var]])
+    return plt, roc_pd
+
+def survival_curve(pd_qsel_data, outcome_var, outcome_time, predictor_class, labels):
+    '''
+    
+
+    Parameters
+    ----------
+    pd_qsel_data : TYPE
+        DESCRIPTION.
+    outcome_var : TYPE
+        DESCRIPTION.
+    outcome_time : TYPE
+        DESCRIPTION.
+    predictor_class : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    plt : TYPE
+        DESCRIPTION.
+
+    '''
+    
+    grp1_filt = pd_qsel_data[predictor_class] == 1
+    grp1 = pd_qsel_data[grp1_filt]
+    
+    grp2_filt = pd_qsel_data[predictor_class] == 0
+    grp2 = pd_qsel_data[grp2_filt]
+    
+    
+    plt.figure()
+    kmf = KaplanMeierFitter()
+    
+    kmf.fit(grp1[outcome_time], grp1[outcome_var], label=labels[0])
+    kmf.plot()
+        
+    kmf.fit(grp2[outcome_time], grp2[outcome_var], label=labels[1])
+    kmf.plot()    
+    plt.xlabel('Time (days)')
+    plt.ylabel('Percent Survival')
+    
+    summary_ = logrank_test(grp1[outcome_time], grp2[outcome_time], grp1[outcome_var], grp2[outcome_var], alpha=99)
+    print(summary_) 
+    
+    return plt
+
+def hazard_rates_curve(pd_qsel_data, outcome_var, outcome_time, predictor_class, labels):
+    '''
+    
+
+    Parameters
+    ----------
+    pd_qsel_data : TYPE
+        DESCRIPTION.
+    outcome_var : TYPE
+        DESCRIPTION.
+    outcome_time : TYPE
+        DESCRIPTION.
+    predictor_class : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    plt : TYPE
+        DESCRIPTION.
+
+    '''
+    
+    grp1_filt = pd_qsel_data[predictor_class] == 1
+    grp1 = pd_qsel_data[grp1_filt]
+    
+    grp2_filt = pd_qsel_data[predictor_class] == 0
+    grp2 = pd_qsel_data[grp2_filt]
+    
+    plt.figure()
+    naf = NelsonAalenFitter()
+    
+    naf.fit(grp1[outcome_time], grp1[outcome_var], label=labels[0])
+    naf.plot()
+        
+    naf.fit(grp2[outcome_time], grp2[outcome_var], label=labels[1])
+    naf.plot()    
+    plt.xlabel('Time (days)')
+    plt.ylabel('Cumulative Hazard')
+    return plt
 
 def plot_plotly(fig, filename):
     lib_prj.paths.make_directory(lib_prj.paths.PATH_PLOTLY_TEMP)

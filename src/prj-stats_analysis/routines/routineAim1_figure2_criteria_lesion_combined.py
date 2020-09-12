@@ -198,7 +198,7 @@ def run(path_wr=''):
     fig.update_layout(showlegend=False)
     
     # Save file if path specified
-    plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
+    # plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
     fig.write_image(path_analysis_png + figure_fname_label + '.png')
     
     # ------------------------------- PLOT 2B ------------------------------- #
@@ -216,7 +216,7 @@ def run(path_wr=''):
     fig.update_layout(showlegend=False)
     
     # Save file if path specified
-    plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
+    # plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
     fig.write_image(path_analysis_png + figure_fname_label + '.png')
     
     
@@ -245,10 +245,10 @@ def run(path_wr=''):
     fig.update_yaxes(title=y_label)
     fig.update_xaxes(title=x_label)
     # Save file if path specified
-    plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
+    # plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
     fig.write_image(path_analysis_png + figure_fname_label + '.png')
     
-    # ------------------------------- PLOT 2D ------------------------------- #
+    # ------------------------------- PLOT 2D ------------------------------ #
     figure_label = 'Figure 2D'
     y_data = 'mass_mcp_perc'
     y_label = 'MMAR<sub>MCP (relative)</sub> (%)'
@@ -263,16 +263,46 @@ def run(path_wr=''):
     fig.update_yaxes(title=y_label)
     fig.update_xaxes(title=x_label)
     # Save file if path specified
-    plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
+    # plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
     fig.write_image(path_analysis_png + figure_fname_label + '.png')
     
     
-    # ------------------------------- PLOT 3 -------------------------------- #
-    # figure_label = 'Figure 3'
-    # outcome_var = 'mi_event'
-    # predictor_var = ['mass_mcp_perc', 'mass_mcp_g']
+    # ------------------------------ PLOT 2E ------------------------------- #
+    figure_label = 'Figure 2E'
+    outcome_var = 'mi_event'
+    predictor_var = ['mass_mcp_perc', 'mass_mcp_g']
     
-    # fig = lib_prj.visualize.roc_plot(pd_qsel_data, outcome_var, predictor_var)
+    figure_fname_label = figure_label.lower().replace(' ', '')
+    fig, roc_tbl = lib_prj.visualize.roc_plot(pd_qsel_data, outcome_var, predictor_var)
+    # fig.title(figure_label)
+    fig.savefig(path_analysis_png + figure_fname_label + '.png', bbox_inches='tight')
+    print(tabulate(roc_tbl, headers='keys', tablefmt='psql'))
+    
+    # ------------------------------ PLOT 2F ------------------------------- #
+    figure_label = 'Figure 2F'
+    outcome_var = 'mi_event'
+    outcome_time = 'mi_time'
+    predictor_class = 'mass_mcp_perc_cutoff'
+    
+    figure_fname_label = figure_label.lower().replace(' ', '')
+    mass_mcp_perc_cutoff = 19.7135 # BASED ON RESULTS FROM 2E ROC-AUC ANALYSIS
+    mass_mcp_g_cutoff = 23.23   # BASED ON RESULTS FROM 2E ROC-AUC ANALYSIS
+    pd_qsel_data['mass_mcp_perc_cutoff'] = np.where(pd_qsel_data['mass_mcp_perc'] > mass_mcp_perc_cutoff, 1, 0)
+    pd_qsel_data['mass_mcp_g_cutoff'] = np.where(pd_qsel_data['mass_mcp_g'] > mass_mcp_g_cutoff, 1, 0)
+    fig = lib_prj.visualize.survival_curve(pd_qsel_data, outcome_var, outcome_time, predictor_class, ['MMAR > {:.2f}%'.format(mass_mcp_perc_cutoff), 'MMAR < {:.2f}%'.format(mass_mcp_perc_cutoff)])
+    fig.savefig(path_analysis_png + figure_fname_label + '.png', bbox_inches='tight')
+    
+    # ------------------------------ PLOT 2G ------------------------------- #
+    figure_label = 'Figure 2G'
+    outcome_var = 'mi_event'
+    outcome_time = 'mi_time'
+    predictor_class = 'mass_mcp_perc_cutoff'
+    
+    figure_fname_label = figure_label.lower().replace(' ', '')
+    mass_mcp_perc_cutoff = 19.7135 # BASED ON RESULTS FROM 2E ROC-AUC ANALYSIS
+    pd_qsel_data['mass_mcp_perc_cutoff'] = np.where(pd_qsel_data['mass_mcp_perc'] > mass_mcp_perc_cutoff, 1, 0)
+    fig = lib_prj.visualize.hazard_rates_curve(pd_qsel_data, outcome_var, outcome_time, predictor_class, ['MMAR > {:.2f}%'.format(mass_mcp_perc_cutoff), 'MMAR < {:.2f}%'.format(mass_mcp_perc_cutoff)])
+    fig.savefig(path_analysis_png + figure_fname_label + '.png', bbox_inches='tight')
     
 if __name__ == '__main__':
    pd_test = run()
