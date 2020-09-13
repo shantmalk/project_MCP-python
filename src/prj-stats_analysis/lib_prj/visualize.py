@@ -27,7 +27,7 @@ from lifelines import CoxPHFitter
 from lifelines.statistics import logrank_test
 
 # TABLES
-def table_basic(pd_data, fpath, row_colors=['#f1f1f2', 'w'], **kwargs):
+def table_basic(pd_data, fpath, row_colors=['#f1f1f2', 'w'], col_labels = [ ], **kwargs):
     '''
     
 
@@ -49,6 +49,8 @@ def table_basic(pd_data, fpath, row_colors=['#f1f1f2', 'w'], **kwargs):
     # SETUP AXIS:
     pd_data = pd_data.round(2) 
     pd_data = table_merge_mean_std(pd_data)
+    if len(col_labels):
+        pd_data.columns = col_labels
     ax = render_mpl_table(pd_data, header_columns=0, col_width=3.0, row_colors=row_colors)
     plt.savefig(fpath)
 
@@ -187,7 +189,7 @@ def table_merge_mean_std(pd_data):
 
 # GRAPHS
 
-def roc_plot(pd_data, outcome_var, predictor_vars):
+def roc_plot(pd_data, outcome_var, predictor_vars, str_labels):
     '''
     
 
@@ -231,7 +233,7 @@ def roc_plot(pd_data, outcome_var, predictor_vars):
     colors = viridis(range(len(predictor_vars)))
     for p_var, color in zip(predictor_vars, colors):
         plt.plot(roc_tbls[p_var]['fpr'], roc_tbls[p_var]['tpr'], color=color,
-                 lw=lw, label='{PRED_VAR} (area = {AUC:0.2f})'.format(PRED_VAR=p_var, AUC=roc_tbls[p_var]['auc'][0]))
+                 lw=lw, label='{PRED_VAR} (area = {AUC:0.2f})'.format(PRED_VAR=str_labels[p_var], AUC=roc_tbls[p_var]['auc'][0]))
     plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.0])
@@ -282,8 +284,7 @@ def survival_curve(pd_qsel_data, outcome_var, outcome_time, predictor_class, lab
         
     kmf.fit(grp2[outcome_time], grp2[outcome_var], label=labels[1])
     kmf.plot()    
-    plt.xlabel('Time (days)')
-    plt.ylabel('Percent Survival')
+    
     
     summary_ = logrank_test(grp1[outcome_time], grp2[outcome_time], grp1[outcome_var], grp2[outcome_var], alpha=99)
     print(summary_) 

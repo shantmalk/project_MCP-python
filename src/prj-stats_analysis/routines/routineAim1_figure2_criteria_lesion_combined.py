@@ -144,7 +144,7 @@ def run(path_wr=''):
     # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
     pd_qsel_pivot = reduce(lambda left,right: pd.merge(left, right, on=pivot_groups,how='outer',), pd_qsel_pivot_list) 
     print(tabulate(pd_qsel_pivot, headers='keys', tablefmt='psql'))
-    lib_prj.visualize.table_basic(pd_qsel_pivot.sort_values(by=['id_main_vessel', 'mi_type_str']), path_analysis_png + 'table2b.png', ['w', '#f1f1f2', '#f1f1f2', 'w',])
+    lib_prj.visualize.table_basic(pd_qsel_pivot.sort_values(by=['id_main_vessel', 'mi_type_str']), path_analysis_png + 'table2b.png', ['w', '#f1f1f2', '#f1f1f2', 'w',], ['', 'Main Vessel Lesion', 'Number of Lesions', 'LV Mass (g)', 'Absolute MMAR (g)', 'Relative MMAR (%)'])
     
     # ---------------------------- Pivot Table 2 --------------------------- #   
     pivot_groups = ['mi_type_str',]
@@ -166,7 +166,7 @@ def run(path_wr=''):
     # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
     pd_qsel_pivot = reduce(lambda left,right: pd.merge(left, right, on=pivot_groups,how='outer',), pd_qsel_pivot_list) 
     print(tabulate(pd_qsel_pivot, headers='keys', tablefmt='psql'))
-    lib_prj.visualize.table_basic(pd_qsel_pivot, path_analysis_png + 'table2a.png')
+    lib_prj.visualize.table_basic(pd_qsel_pivot, path_analysis_png + 'table2a.png',col_labels=['', 'Number of Lesions', 'LV Mass (g)', 'Absolute MMAR (g)', 'Relative MMAR (%)'])
     
     # ------------------------------ VISUALIZE ----------------------------- #
 
@@ -186,8 +186,9 @@ def run(path_wr=''):
     # ------------------------------ FIGURE 2A ----------------------------- #
     figure_label = 'Figure 2A'
     y_data = 'mass_mcp_g'
-    y_label = 'MMAR<sub>MCP (absolute)</sub> (g)'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of MI and no MI groups'
+    y_label = 'Absolute MMAR (g)'
+    # title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of MI and no MI groups'
+    title = ''
     
     figure_fname_label = figure_label.lower().replace(' ', '')
     args_plotly['y'] = [y_data]
@@ -204,8 +205,9 @@ def run(path_wr=''):
     # ------------------------------- PLOT 2B ------------------------------- #
     figure_label = 'Figure 2B'
     y_data = 'mass_mcp_perc'
-    y_label = 'MMAR<sub>MCP (relative)</sub> (%)'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of MI and no MI groups'
+    y_label = 'Relative MMAR (%)'
+    # title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of MI and no MI groups'
+    title = ''
     
     figure_fname_label = figure_label.lower().replace(' ', '')
     args_plotly['y'] = [y_data]
@@ -233,9 +235,10 @@ def run(path_wr=''):
     # ------------------------------ FIGURE 2C ----------------------------- #
     figure_label = 'Figure 2C'
     y_data = 'mass_mcp_g'
-    y_label = 'MMAR<sub>MCP (absolute)</sub> (g)'
+    y_label = 'Absolute MMAR (g)'
     x_label = 'Main Coronary Artery Lesion'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of MI and no MI groups - per main coronary artery'
+    # title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of MI and no MI groups - per main coronary artery'
+    title = ''
     
     
     figure_fname_label = figure_label.lower().replace(' ', '')
@@ -251,9 +254,10 @@ def run(path_wr=''):
     # ------------------------------- PLOT 2D ------------------------------ #
     figure_label = 'Figure 2D'
     y_data = 'mass_mcp_perc'
-    y_label = 'MMAR<sub>MCP (relative)</sub> (%)'
+    y_label = 'Relative MMAR (%)'
     x_label = 'Main Coronary Artery Lesion'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of MI and no MI groups - per main coronary artery'
+    # title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of MI and no MI groups - per main coronary artery'
+    title = ''
     
     
     figure_fname_label = figure_label.lower().replace(' ', '')
@@ -273,9 +277,11 @@ def run(path_wr=''):
     predictor_var = ['mass_mcp_perc', 'mass_mcp_g']
     
     figure_fname_label = figure_label.lower().replace(' ', '')
-    fig, roc_tbl = lib_prj.visualize.roc_plot(pd_qsel_data, outcome_var, predictor_var)
+    fig, roc_tbl = lib_prj.visualize.roc_plot(pd_qsel_data, outcome_var, predictor_var, {'mass_mcp_perc' : 'Relative MMAR', 'mass_mcp_g': 'Absolute MMAR'})
     # fig.title(figure_label)
+    
     fig.savefig(path_analysis_png + figure_fname_label + '.png', bbox_inches='tight')
+    
     print(tabulate(roc_tbl, headers='keys', tablefmt='psql'))
     
     # ------------------------------ PLOT 2F ------------------------------- #
@@ -289,7 +295,11 @@ def run(path_wr=''):
     mass_mcp_g_cutoff = 23.23   # BASED ON RESULTS FROM 2E ROC-AUC ANALYSIS
     pd_qsel_data['mass_mcp_perc_cutoff'] = np.where(pd_qsel_data['mass_mcp_perc'] > mass_mcp_perc_cutoff, 1, 0)
     pd_qsel_data['mass_mcp_g_cutoff'] = np.where(pd_qsel_data['mass_mcp_g'] > mass_mcp_g_cutoff, 1, 0)
-    fig = lib_prj.visualize.survival_curve(pd_qsel_data, outcome_var, outcome_time, predictor_class, ['MMAR > {:.2f}%'.format(mass_mcp_perc_cutoff), 'MMAR < {:.2f}%'.format(mass_mcp_perc_cutoff)])
+    fig = lib_prj.visualize.survival_curve(pd_qsel_data, outcome_var, outcome_time, predictor_class, ['Relative MMAR > {:.2f}%'.format(mass_mcp_perc_cutoff), 'Relative MMAR < {:.2f}%'.format(mass_mcp_perc_cutoff)])
+    
+    fig.xlabel('Time (days)')
+    fig.ylabel('Percent occurrence of MI')
+    
     fig.savefig(path_analysis_png + figure_fname_label + '.png', bbox_inches='tight')
     
     # ------------------------------ PLOT 2G ------------------------------- #
@@ -301,7 +311,9 @@ def run(path_wr=''):
     figure_fname_label = figure_label.lower().replace(' ', '')
     mass_mcp_perc_cutoff = 19.7135 # BASED ON RESULTS FROM 2E ROC-AUC ANALYSIS
     pd_qsel_data['mass_mcp_perc_cutoff'] = np.where(pd_qsel_data['mass_mcp_perc'] > mass_mcp_perc_cutoff, 1, 0)
-    fig = lib_prj.visualize.hazard_rates_curve(pd_qsel_data, outcome_var, outcome_time, predictor_class, ['MMAR > {:.2f}%'.format(mass_mcp_perc_cutoff), 'MMAR < {:.2f}%'.format(mass_mcp_perc_cutoff)])
+    fig = lib_prj.visualize.hazard_rates_curve(pd_qsel_data, outcome_var, outcome_time, predictor_class, ['Relative MMAR > {:.2f}%'.format(mass_mcp_perc_cutoff), 'Relative MMAR < {:.2f}%'.format(mass_mcp_perc_cutoff)])
+    fig.xlabel('Time (days)')
+    fig.ylabel('Cumulative Hazard Ratio')
     fig.savefig(path_analysis_png + figure_fname_label + '.png', bbox_inches='tight')
     
 if __name__ == '__main__':
