@@ -143,7 +143,8 @@ def run(path_wr=''):
     # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
     pd_qsel_pivot = reduce(lambda left,right: pd.merge(left, right, on=pivot_groups,how='outer',), pd_qsel_pivot_list) 
     print(tabulate(pd_qsel_pivot.sort_values(by=['id_main_vessel', 'mi_type_str']), headers='keys', tablefmt='psql'))
-    lib_prj.visualize.table_basic(pd_qsel_pivot.sort_values(by=['id_main_vessel', 'mi_type_str']), path_analysis_png + 'table3b.png', ['w', '#f1f1f2', '#f1f1f2', '#f1f1f2', '#f1f1f2', 'w', 'w', 'w',])
+    lib_prj.visualize.table_basic(pd_qsel_pivot.sort_values(by=['id_main_vessel', 'mi_type_str']), path_analysis_png + 'table3b.png', ['w', '#f1f1f2', '#f1f1f2', '#f1f1f2', '#f1f1f2', 'w', 'w', 'w', '#f1f1f2','#f1f1f2', '#f1f1f2'],
+               ['', 'Main Vessel Lesion', 'Number of Lesions', 'LV Mass (g)', 'Absolute MMAR (g)', 'Relative MMAR (%)'])
     
     # ---------------------------- Pivot Table 2 --------------------------- #
     pivot_groups = ['mi_type_str',]
@@ -165,7 +166,7 @@ def run(path_wr=''):
     # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
     pd_qsel_pivot = reduce(lambda left,right: pd.merge(left, right, on=pivot_groups,how='outer',), pd_qsel_pivot_list) 
     print(tabulate(pd_qsel_pivot, headers='keys', tablefmt='psql'))
-    lib_prj.visualize.table_basic(pd_qsel_pivot, path_analysis_png + 'table3a.png')
+    lib_prj.visualize.table_basic(pd_qsel_pivot, path_analysis_png + 'table3a.png', col_labels=['', 'Number of Lesions', 'LV Mass (g)', 'Absolute MMAR (g)', 'Relative MMAR (%)'])
     # ------------------------------ VISUALIZE ----------------------------- #
 
     
@@ -187,8 +188,9 @@ def run(path_wr=''):
     # ------------------------------ FIGURE 2A ----------------------------- #
     figure_label = 'Figure 3A'
     y_data = 'mass_mcp_g'
-    y_label = 'MMAR<sub>MCP (absolute)</sub> (g)'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of MI types'
+    y_label = 'Absolute MMAR (g)'
+    # title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of MI types'
+    title = ''
     
     figure_fname_label = figure_label.lower().replace(' ', '')
     args_plotly['y'] = [y_data]
@@ -199,14 +201,15 @@ def run(path_wr=''):
     fig.update_layout(showlegend=False)
     
     # Save file if path specified
-    plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
+    # plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
     fig.write_image(path_analysis_png + figure_fname_label + '.png')
     
     # ------------------------------- PLOT 2B ------------------------------- #
     figure_label = 'Figure 3B'
     y_data = 'mass_mcp_perc'
-    y_label = 'MMAR<sub>MCP (relative)</sub> (%)'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of MI types'
+    y_label = 'Relative MMAR (%)'
+    # title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of MI types'
+    title = ''
     
     figure_fname_label = figure_label.lower().replace(' ', '')
     args_plotly['y'] = [y_data]
@@ -217,7 +220,7 @@ def run(path_wr=''):
     fig.update_layout(showlegend=False)
     
     # Save file if path specified
-    plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
+    # plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
     fig.write_image(path_analysis_png + figure_fname_label + '.png')
     
     
@@ -234,10 +237,10 @@ def run(path_wr=''):
     # ------------------------------ FIGURE 2C ----------------------------- #
     figure_label = 'Figure 3C'
     y_data = 'mass_mcp_g'
-    y_label = 'MMAR<sub>MCP (absolute)</sub> (g)'
+    y_label = 'Absolute MMAR (g)'
     x_label = 'Main Coronary Artery Lesion'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of MI types - per main coronary artery'
-    
+    # title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of MI types - per main coronary artery'
+    title = ''
     
     figure_fname_label = figure_label.lower().replace(' ', '')
     args_plotly['y'] = [y_data]
@@ -246,16 +249,16 @@ def run(path_wr=''):
     fig.update_yaxes(title=y_label)
     fig.update_xaxes(title=x_label)
     # Save file if path specified
-    plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
+    # plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
     fig.write_image(path_analysis_png + figure_fname_label + '.png')
     
     # ------------------------------- PLOT 2D ------------------------------- #
     figure_label = 'Figure 3D'
     y_data = 'mass_mcp_perc'
-    y_label = 'MMAR<sub>MCP (relative)</sub> (%)'
+    y_label = 'Relative MMAR (%)'
     x_label = 'Main Coronary Artery Lesion'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of MI types - per main coronary artery'
-    
+    # title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of MI types - per main coronary artery'
+    title = ''
     
     figure_fname_label = figure_label.lower().replace(' ', '')
     args_plotly['y'] = [y_data]
@@ -264,7 +267,7 @@ def run(path_wr=''):
     fig.update_yaxes(title=y_label)
     fig.update_xaxes(title=x_label)
     # Save file if path specified
-    plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
+    # plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
     fig.write_image(path_analysis_png + figure_fname_label + '.png')
         
 if __name__ == '__main__':

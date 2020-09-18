@@ -6,5 +6,5 @@ save_non_project_files = False
 
 [main]
 version = 0.2.0
-recent_files = ['..\\..\\..\\..\\..\\..\\.spyder-py3\\temp.py', 'lib_prj\\visualize.py', 'routines\\routineAim1_figure2_criteria_lesion_combined.py', 'routines\\routineAim4_figure6_alt_cad_params.py', 'routines\\routineAim2_figure4_icaverifiedculprit.py']
+recent_files = ['..\\..\\..\\..\\..\\..\\.spyder-py3\\temp.py', 'lib_prj\\visualize.py', 'routines\\routineAim1_figure2_criteria_lesion_combined.py', 'routines\\routineAim1_figure3_criteria_lesion_combined.py']
 

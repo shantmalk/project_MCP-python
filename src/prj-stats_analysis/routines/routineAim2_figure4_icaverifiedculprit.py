@@ -110,24 +110,25 @@ def run(path_wr=''):
     print()
     
     # ------------------------- Save p-value tables ------------------------ #
-    lib_prj.visualize.table_pvalues({'lesions_all' : pd_anova_all_lesions_mcp_mass_g}, path_analysis_png + 'p_val-figure4a.png')
-    lib_prj.visualize.table_pvalues({'lesions_all' : pd_anova_all_lesions_mcp_mass_perc}, path_analysis_png + 'p_val-figure4b.png')
-    lib_prj.visualize.table_pvalues(pd_p_val_mass_mcp_g, path_analysis_png + 'p_val-figure4c.png')
-    lib_prj.visualize.table_pvalues(pd_p_val_mass_mcp_perc, path_analysis_png + 'p_val-figure4d.png')
+    lib_prj.visualize.table_pvalues({'lesions_all' : pd_anova_all_lesions_mcp_mass_g}, path_analysis_png + 'p_val-figure5a.png')
+    lib_prj.visualize.table_pvalues({'lesions_all' : pd_anova_all_lesions_mcp_mass_perc}, path_analysis_png + 'p_val-figure5b.png')
+    lib_prj.visualize.table_pvalues(pd_p_val_mass_mcp_g, path_analysis_png + 'p_val-figure5c.png')
+    lib_prj.visualize.table_pvalues(pd_p_val_mass_mcp_perc, path_analysis_png + 'p_val-figure5d.png')
     
     # ---------------------------- Pivot Table 1 --------------------------- #
     pivot_groups = ['mi_type_str', 'lesion_culprit_str']
+    columns = ['mass_mcp_g', 'mass_mcp_perc']
     # Make pivot table
     pd_qsel_pivot_totals = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=len, values=['confirm_idc_str'])
     pd_qsel_pivot_totals.columns = ['total_lesions']
     pd_qsel_pivot_totals.reset_index(inplace=True)
     
-    pd_qsel_pivot_mean = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc="mean", values=['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc'])
-    pd_qsel_pivot_mean.columns = [x + '_mean' for x in ['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc']]
+    pd_qsel_pivot_mean = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc="mean", values=columns)
+    pd_qsel_pivot_mean.columns = [x + '_mean' for x in columns]
     pd_qsel_pivot_mean.reset_index(inplace=True)
     
-    pd_qsel_pivot_std = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=np.std, values=['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc'])
-    pd_qsel_pivot_std.columns = [x + '_std' for x in ['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc']]
+    pd_qsel_pivot_std = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=np.std, values=columns)
+    pd_qsel_pivot_std.columns = [x + '_std' for x in columns]
     pd_qsel_pivot_std.reset_index(inplace=True)
     
     # Merge pivot tables
@@ -135,21 +136,22 @@ def run(path_wr=''):
     # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
     pd_qsel_pivot = reduce(lambda left,right: pd.merge(left, right, on=pivot_groups,how='outer',), pd_qsel_pivot_list) 
     print(tabulate(pd_qsel_pivot.sort_values(by=['mi_type_str', 'lesion_culprit_str']), headers='keys', tablefmt='psql'))
-    lib_prj.visualize.table_basic(pd_qsel_pivot.sort_values(by=['mi_type_str', 'lesion_culprit_str']), path_analysis_png + 'table4b.png', ['w', '#f1f1f2', '#f1f1f2', 'w',])
-    
+    lib_prj.visualize.table_basic(pd_qsel_pivot.sort_values(by=['mi_type_str', 'lesion_culprit_str']), path_analysis_png + 'table5b.png', ['w', '#f1f1f2', '#f1f1f2', 'w',], ['MI Type', 'Lesion Type', 'Number of Lesions', 'Absolute MMAR (g)', 'Relative MMAR (%)'])
+
     # ---------------------------- Pivot Table 2 --------------------------- #
     pivot_groups = ['lesion_culprit_str',]
+    columns = ['mass_mcp_g', 'mass_mcp_perc']
     # Make pivot table
     pd_qsel_pivot_totals = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=len, values=['confirm_idc_str'])
     pd_qsel_pivot_totals.columns = ['total_lesions']
     pd_qsel_pivot_totals.reset_index(inplace=True)
     
-    pd_qsel_pivot_mean = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc="mean", values=['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc'])
-    pd_qsel_pivot_mean.columns = [x + '_mean' for x in ['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc']]
+    pd_qsel_pivot_mean = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc="mean", values=columns)
+    pd_qsel_pivot_mean.columns = [x + '_mean' for x in columns]
     pd_qsel_pivot_mean.reset_index(inplace=True)
     
-    pd_qsel_pivot_std = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=np.std, values=['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc'])
-    pd_qsel_pivot_std.columns = [x + '_std' for x in ['mass_lv_g', 'mass_mcp_g', 'mass_mcp_perc']]
+    pd_qsel_pivot_std = pd.pivot_table(pd_qsel_data, index=pivot_groups, aggfunc=np.std, values=columns)
+    pd_qsel_pivot_std.columns = [x + '_std' for x in columns]
     pd_qsel_pivot_std.reset_index(inplace=True)
     
     # Merge pivot tables
@@ -157,7 +159,7 @@ def run(path_wr=''):
     # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
     pd_qsel_pivot = reduce(lambda left,right: pd.merge(left, right, on=pivot_groups,how='outer',), pd_qsel_pivot_list) 
     print(tabulate(pd_qsel_pivot, headers='keys', tablefmt='psql'))
-    lib_prj.visualize.table_basic(pd_qsel_pivot, path_analysis_png + 'table4a.png')
+    lib_prj.visualize.table_basic(pd_qsel_pivot, path_analysis_png + 'table5a.png', col_labels=['Lesion Type', 'Number of Lesions', 'Absolute MMAR (g)', 'Relative MMAR (%)'])
     
     
     # ------------------------------ VISUALIZE ----------------------------- #
@@ -179,10 +181,11 @@ def run(path_wr=''):
         }
     
     # ------------------------------ FIGURE 2A ----------------------------- #
-    figure_label = 'Figure 4A'
+    figure_label = 'Figure 5A'
     y_data = 'mass_mcp_g'
-    y_label = 'MMAR<sub>MCP (absolute)</sub> (g)'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of culprit and non-culprit lesions'
+    y_label = 'Absolute MMAR (g)'
+    # title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of culprit and non-culprit lesions'
+    title =''
     
     figure_fname_label = figure_label.lower().replace(' ', '')
     args_plotly['y'] = [y_data]
@@ -193,14 +196,16 @@ def run(path_wr=''):
     fig.update_layout(showlegend=False)
     
     # Save file if path specified
-    plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
+    # plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
     fig.write_image(path_analysis_png + figure_fname_label + '.png')
     
     # ------------------------------- PLOT 2B ------------------------------- #
-    figure_label = 'Figure 4B'
+    figure_label = 'Figure 5B'
     y_data = 'mass_mcp_perc'
-    y_label = 'MMAR<sub>MCP (relative)</sub> (%)'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of culprit and non-culprit lesions'
+    y_label = 'Relative MMAR (%)'
+    # y_label = 'MMAR<sub>MCP (relative)</sub> (%)'
+    # title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of culprit and non-culprit lesions'
+    title = ''
     
     figure_fname_label = figure_label.lower().replace(' ', '')
     args_plotly['y'] = [y_data]
@@ -211,7 +216,7 @@ def run(path_wr=''):
     fig.update_layout(showlegend=False)
     
     # Save file if path specified
-    plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
+    # plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
     fig.write_image(path_analysis_png + figure_fname_label + '.png')
     
     
@@ -225,11 +230,12 @@ def run(path_wr=''):
         }
     
     # ------------------------------ FIGURE 2C ----------------------------- #
-    figure_label = 'Figure 4C'
+    figure_label = 'Figure 5C'
     y_data = 'mass_mcp_g'
-    y_label = 'MMAR<sub>MCP (absolute)</sub> (g)'
+    y_label = 'Absolute MMAR (g)'
     x_label = 'MI Type' 
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of culprit and non-culprit lesions'
+    # title =  figure_label + ': Box plot of MMAR<sub>MCP (abs)</sub> of culprit and non-culprit lesions'
+    title = ''
     
     
     figure_fname_label = figure_label.lower().replace(' ', '')
@@ -239,16 +245,16 @@ def run(path_wr=''):
     fig.update_yaxes(title=y_label)
     fig.update_xaxes(title=x_label)
     # Save file if path specified
-    plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
+    # plot_url = plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
     fig.write_image(path_analysis_png + figure_fname_label + '.png')
     
     # ------------------------------- PLOT 2D ------------------------------- #
-    figure_label = 'Figure 4D'
+    figure_label = 'Figure 5D'
     y_data = 'mass_mcp_perc'
-    y_label = 'MMAR<sub>MCP (relative)</sub> (%)'
+    y_label = 'Relative MMAR (%)'
     x_label = 'MI Type'
-    title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of culprit and non-culprit lesions'
-    
+    # title =  figure_label + ': Box plot of MMAR<sub>MCP (rel)</sub> of culprit and non-culprit lesions'
+    title = ''
     
     figure_fname_label = figure_label.lower().replace(' ', '')
     args_plotly['y'] = [y_data]
@@ -257,7 +263,7 @@ def run(path_wr=''):
     fig.update_yaxes(title=y_label)
     fig.update_xaxes(title=x_label)
     # Save file if path specified
-    plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
+    # plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
     fig.write_image(path_analysis_png + figure_fname_label + '.png')
         
 if __name__ == '__main__':

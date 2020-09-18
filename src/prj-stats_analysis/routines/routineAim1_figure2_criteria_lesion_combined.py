@@ -144,7 +144,8 @@ def run(path_wr=''):
     # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
     pd_qsel_pivot = reduce(lambda left,right: pd.merge(left, right, on=pivot_groups,how='outer',), pd_qsel_pivot_list) 
     print(tabulate(pd_qsel_pivot, headers='keys', tablefmt='psql'))
-    lib_prj.visualize.table_basic(pd_qsel_pivot.sort_values(by=['id_main_vessel', 'mi_type_str']), path_analysis_png + 'table2b.png', ['w', '#f1f1f2', '#f1f1f2', 'w',], ['', 'Main Vessel Lesion', 'Number of Lesions', 'LV Mass (g)', 'Absolute MMAR (g)', 'Relative MMAR (%)'])
+    lib_prj.visualize.table_basic(pd_qsel_pivot.sort_values(by=['id_main_vessel', 'mi_type_str']), path_analysis_png + 'table2b.png', ['w', '#f1f1f2', '#f1f1f2', 'w',], 
+                                  ['', 'Main Vessel Lesion', 'Number of Lesions', 'LV Mass (g)', 'Absolute MMAR (g)', 'Relative MMAR (%)'])
     
     # ---------------------------- Pivot Table 2 --------------------------- #   
     pivot_groups = ['mi_type_str',]
