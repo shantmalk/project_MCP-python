@@ -266,5 +266,34 @@ def run(path_wr=''):
     # plot(fig, filename=path_analysis_html + figure_fname_label + '.html')
     fig.write_image(path_analysis_png + figure_fname_label + '.png')
         
+    # ------------------------------ PLOT 2E ------------------------------- #
+    pd_qsel_data['lesion_culprit_ica_ct'] = pd_qsel_data['lesion_culprit_ica_ct'].astype(int)
+    figure_label = 'Figure 5E'
+    outcome_var = 'lesion_culprit_ica_ct'
+    predictor_var = ['mass_mcp_perc', 'mass_mcp_g']
+    
+    figure_fname_label = figure_label.lower().replace(' ', '')
+    fig, roc_tbl = lib_prj.visualize.roc_plot(pd_qsel_data, outcome_var, predictor_var, {'mass_mcp_perc' : 'Relative MMAR', 'mass_mcp_g': 'Absolute MMAR'})
+    # fig.title(figure_label)
+    
+    fig.savefig(path_analysis_png + figure_fname_label + '.png', bbox_inches='tight')
+    
+    print(tabulate(roc_tbl, headers='keys', tablefmt='psql'))
+    
+    # ------------------------------ PLOT 2F ------------------------------- #
+    figure_label = 'Figure 5F'
+    outcome_var = 'lesion_culprit_ica_ct'
+    outcome_time = 'mi_time'
+    predictor_class = 'mass_mcp_perc_cutoff'
+    
+    figure_fname_label = figure_label.lower().replace(' ', '')
+    mass_mcp_perc_cutoff = 27.8571 # BASED ON RESULTS FROM 2E ROC-AUC ANALYSIS - SP = 1 - 0.303419; SN = 0.650794
+    mass_mcp_g_cutoff = 23.23   # BASED ON RESULTS FROM 2E ROC-AUC ANALYSIS
+    pd_qsel_data['mass_mcp_perc_cutoff'] = np.where(pd_qsel_data['mass_mcp_perc'] > mass_mcp_perc_cutoff, 1, 0)
+    pd_qsel_data['mass_mcp_g_cutoff'] = np.where(pd_qsel_data['mass_mcp_g'] > mass_mcp_g_cutoff, 1, 0)
+    fig = lib_prj.visualize.survival_curve(pd_qsel_data, outcome_var, outcome_time, predictor_class, ['Relative MMAR > {:.2f}%'.format(mass_mcp_perc_cutoff), 'Relative MMAR < {:.2f}%'.format(mass_mcp_perc_cutoff)])
+    
+    fig.xlabel('Time (days)')
+    fig.ylabel('Percent occurrence of MI')
 if __name__ == '__main__':
    pd_test = run()
