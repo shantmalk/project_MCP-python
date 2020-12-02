@@ -1,0 +1,11 @@
+{
+	"note" :
+	{
+		"note" : "This file contains SQL queries specifically to parse data for the CONFIRM trial.  Data is parsed from Microsoft Access database."
+	},
+	"script1-figure1-perlesion" :
+	{
+		"qsel" : "SELECT tblConfirmCONFIRM.confirm_idc_str, tblMCP.id_vessel_study, tblMCP.mass_lv_g, tblMCP.mass_mcp_g, tblMCP.mass_mcp_perc, tblConfirmPerLesion.lesion_worst, tblConfirmPerLesion.mi_type, tblConfirmPerLesion.mi_event, tblMCP.id_main_vessel FROM qselFilterMCPMostRecentEntry INNER JOIN ((tblConfirmPerLesion INNER JOIN tblConfirmCONFIRM ON tblConfirmPerLesion.confirm_idc = tblConfirmCONFIRM.[﻿confirm_idc]) INNER JOIN tblMCP ON tblConfirmPerLesion.lesion_id = tblMCP.id_vessel_study) ON qselFilterMCPMostRecentEntry.MaxOfid_datetime_mcp = tblMCP.id_datetime_mcp GROUP BY tblConfirmCONFIRM.confirm_idc_str, tblMCP.id_vessel_study, tblMCP.mass_lv_g, tblMCP.mass_mcp_g, tblMCP.mass_mcp_perc, tblConfirmPerLesion.lesion_worst, tblConfirmPerLesion.mi_type, tblConfirmPerLesion.mi_event, tblMCP.id_main_vessel, tblMCP.id_vessel, tblMCP.id_vtree HAVING (((tblConfirmPerLesion.lesion_worst)=1) AND ((tblMCP.id_vessel) Like '%dist%') AND ((tblMCP.id_vtree)='sub'));",
+		"note" : "SQL query for parsing per-lesion data"
+	}
+}

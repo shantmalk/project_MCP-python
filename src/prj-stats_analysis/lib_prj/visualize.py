@@ -8,6 +8,7 @@ import os
 import shutil
 import plotly.express as px
 from plotly.offline import plot
+import plotly.graph_objects as go
 import lib_prj
 import matplotlib.pyplot as plt
 from pandas.plotting import table as pd_table
@@ -188,6 +189,36 @@ def table_merge_mean_std(pd_data):
 
 
 # GRAPHS
+def param_boxplot(metric_var, agg_col, fig=plt.figure()):
+    '''
+
+
+    Parameters
+    ----------
+    metric_var : STRING
+        "Metric" variable.
+    agg_col : STRING
+        "Aggregate" column name.
+    fig : plt.Figure(), optional
+        If no figure specified, create one. The default is plt.figure().
+
+    Returns
+    -------
+    None.
+
+    '''
+
+    pd_dict = lib_prj.process.mk_pd_dict(pd_data, metric_var, {'mmar_max' : 'max',
+                                                               'mmar_min' : 'min',
+                                                               })    
+    
+    
+    agg_dict = lib_prj.process.agg_dataframe_dict(agg_col, pd_dict)
+    df_dict = lib_prj.process.mk_pd_dict(df_mcp_comb, metric_var, {'mmar_max' : 'max', 'mmar_min' : 'min'})
+    df_mmar = lib_prj.process.agg_dataframe_dict(mmar_var_col, df_dict)
+
+    plt.figure()
+    sns.boxplot(x='mass_mcp_g', y=mmar_var_col, data=df_mmar)
 
 def roc_plot(pd_data, outcome_var, predictor_vars, str_labels):
     '''
@@ -213,15 +244,18 @@ def roc_plot(pd_data, outcome_var, predictor_vars, str_labels):
     tpr = dict()
     thresh = dict()
     roc_auc = dict()
+    # filt_pd_data = pd_data[~pd.isnull(pd_data[outcome_var])]
+    filt_pd_data = pd_data
+    #filt_pd_data[outcome_var][pd.isnull(filt_pd_data[outcome_var])]
     for i in range(len(predictor_vars)):
-        fpr[i], tpr[i], thresh[i] = roc_curve(pd_data[outcome_var], pd_data[predictor_vars[i]])
+        fpr[i], tpr[i], thresh[i] = roc_curve(filt_pd_data[outcome_var], filt_pd_data[predictor_vars[i]]) # REMOVE == '1' IF NECESSARY FOR OTHER PROCESSING...
         roc_auc[i] = auc(fpr[i], tpr[i])
     
     # COMBINE DICTIONARIES INTO PD ARRAYS:
     roc_tbls = dict()
     for p_var in predictor_vars:
         roc_tbls[p_var] = pd.DataFrame()
-        roc_tbls[p_var]['fpr'], roc_tbls[p_var]['tpr'], roc_tbls[p_var]['thresh'] = roc_curve(pd_data[outcome_var], pd_data[p_var])
+        roc_tbls[p_var]['fpr'], roc_tbls[p_var]['tpr'], roc_tbls[p_var]['thresh'] = roc_curve(filt_pd_data[outcome_var], filt_pd_data[p_var])
         roc_tbls[p_var]['auc'] = auc(roc_tbls[p_var]['fpr'], roc_tbls[p_var]['tpr'])
         roc_tbls[p_var]['predictor_var'] = p_var
     
@@ -234,9 +268,9 @@ def roc_plot(pd_data, outcome_var, predictor_vars, str_labels):
     for p_var, color in zip(predictor_vars, colors):
         plt.plot(roc_tbls[p_var]['fpr'], roc_tbls[p_var]['tpr'], color=color,
                  lw=lw, label='{PRED_VAR} (area = {AUC:0.2f})'.format(PRED_VAR=str_labels[p_var], AUC=roc_tbls[p_var]['auc'][0]))
-    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-    plt.xlim([0.0, 1.0])
-    plt.ylim([0.0, 1.0])
+    plt.plot([-0.01, 1.01], [-0.01, 1.01], color='navy', lw=lw, linestyle='--')
+    plt.xlim([-0.01, 1.01])
+    plt.ylim([-0.01, 1.01])
     plt.xlabel('1 - Specificity')
     plt.ylabel('Sensitivity')
     plt.legend(loc="lower right")
@@ -359,8 +393,9 @@ def boxplot_plotly(pd_data, args_plotly, axis_labels):
     
     # Add addt parameters to args_plotly
     args_plotly['title'] = '<b>' + args_plotly['title'] + '</b>'
-    
+
     fig = px.box(pd_data, **args_plotly)
+            
     return fig
     
 def plotly_clear_fig():

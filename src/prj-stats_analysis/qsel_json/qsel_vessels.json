@@ -1,0 +1,6 @@
+{
+    "vessel_general" :
+	{
+    	"qsel" : "SELECT * FROM tblVesselAnalysis"
+	}
+}
