@@ -146,9 +146,9 @@ cols = [
         ] 
 
 # In[ ] FILTER COLUMNS - If majority of values is None, remove
-df['lesion_culprit_ica_ct'] = pd.to_numeric(df['lesion_culprit_ica_ct'], errors='coerce').fillna(0)
 
 updated_cols = cols.copy()
+
 for ii in range(len(cols)):
     cur_count = (len(df[cols[ii]]) - df[cols[ii]].count()) / len(df[cols[ii]])
     if cur_count > 0:
@@ -187,9 +187,10 @@ OUTCOME = 'lesion_culprit_ica_ct'
 # In[ ] INFORMATION-GAIN METHOD (SAME AS UCLA GROUP)
 # Most robust method
 # Similarities with previous UCLA study, but note the outcome in this code is MI event, the outcome in the UCLA study was all-cause mortality
+
 ft = information_gain_df(df, cols, OUTCOME)
-ft = ft[ft[OUTCOME] > 0 ]
+ft = ft[ft['entropy'] > 0 ]
 FEATURES = ft
 
 if __name__ == '__main__':
-     view_features_variance(ft, 'lesion_culprit_ica_ct', '') # VISUALIZE
+     lib_prj.process.view_features_variance(ft, '') # VISUALIZE

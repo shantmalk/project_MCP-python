@@ -78,28 +78,12 @@ qsel_mmar = "SELECT tblMCP.id_vessel_study, tblMCP.mass_mcp_perc, tblMCP.mass_mc
 pd_mmar = db_query(path_db, qsel_mmar)
 pd_mmar = pd_mmar.rename(columns={'id_vessel_study' : 'lesion_id'})
 
-
-# In[ ] MMAR DATA - AGGREGATE - SKIP FOR PER-LESION
-# pd_mmar_max = mmar_agg_per_vessel(pd_mmar, 'max')
-# pd_mmar_min = mmar_agg_per_vessel(pd_mmar, 'min')
-# pd_mmar_mean = mmar_agg_per_vessel(pd_mmar, 'mean')
-# pd_mmar_sum = mmar_agg_per_vessel(pd_mmar, 'sum')
-
 # In[ ] CONFIRM DATA - LOAD DATA
 qsel_confirm = "SELECT tblConfirmPerLesion.* FROM tblConfirmPerLesion;"
 pd_confirm = db_query(path_db, qsel_confirm)
+pd_confirm['lesion_culprit_ica_ct'] = pd.to_numeric(pd_confirm['lesion_culprit_ica_ct'], errors='coerce').fillna(0)
 
 # In[ ] COMBINE DATA - MERGE DATAFRAMES
-# PD_COMBINED_MAX = pd_mmar_max.merge(pd_confirm, how='left', on='confirm_idc')
-# PD_COMBINED_MIN = pd_mmar_min.merge(pd_confirm, how='left', on='confirm_idc')
-# PD_COMBINED_MEAN = pd_mmar_mean.merge(pd_confirm, how='left', on='confirm_idc')
-# PD_COMBINED_SUM = pd_mmar_sum.merge(pd_confirm, how='left', on='confirm_idc')
-# # PD_COMBINED = pd.concat([PD_COMBINED_MAX, PD_COMBINED_MIN, PD_COMBINED_MEAN, PD_COMBINED_SUM])
-
-# PD_COMBINED = mmar_agg_per_vessel(pd_mmar, 'max', '_max').merge(pd_confirm, how='left', on='confirm_idc')
-# PD_COMBINED = PD_COMBINED.merge(mmar_agg_per_vessel(pd_mmar, 'min', '_min'), how='left', on='confirm_idc')
-# PD_COMBINED = PD_COMBINED.merge(mmar_agg_per_vessel(pd_mmar, 'mean', '_mean'), how='left', on='confirm_idc')
-# PD_COMBINED = PD_COMBINED.merge(mmar_agg_per_vessel(pd_mmar, 'sum', '_sum'), how='left', on='confirm_idc')
 PD_COMBINED = pd_mmar.merge(pd_confirm, how='left', on='lesion_id')
 
 # In[ ] BASIC FIGURES

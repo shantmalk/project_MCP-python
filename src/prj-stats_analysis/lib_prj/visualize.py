@@ -220,7 +220,7 @@ def param_boxplot(metric_var, agg_col, fig=plt.figure()):
     plt.figure()
     sns.boxplot(x='mass_mcp_g', y=mmar_var_col, data=df_mmar)
 
-def roc_plot(pd_data, outcome_var, predictor_vars, str_labels):
+def roc_plot(pd_data, outcome_var, predictor_dict):
     '''
     
 
@@ -230,7 +230,7 @@ def roc_plot(pd_data, outcome_var, predictor_vars, str_labels):
         DESCRIPTION.
     outcome_var : TYPE
         DESCRIPTION.
-    predictor_vars : TYPE
+    predictor_dict : TYPE
         DESCRIPTION.
 
     Returns
@@ -238,6 +238,8 @@ def roc_plot(pd_data, outcome_var, predictor_vars, str_labels):
     None.
 
     '''
+    
+    predictor_vars = list(predictor_dict.keys())
     
     # CALCULATE ROC PLOTS
     fpr = dict()
@@ -267,7 +269,7 @@ def roc_plot(pd_data, outcome_var, predictor_vars, str_labels):
     colors = viridis(range(len(predictor_vars)))
     for p_var, color in zip(predictor_vars, colors):
         plt.plot(roc_tbls[p_var]['fpr'], roc_tbls[p_var]['tpr'], color=color,
-                 lw=lw, label='{PRED_VAR} (area = {AUC:0.2f})'.format(PRED_VAR=str_labels[p_var], AUC=roc_tbls[p_var]['auc'][0]))
+                 lw=lw, label='{PRED_VAR} (area = {AUC:0.2f})'.format(PRED_VAR=predictor_dict[p_var], AUC=roc_tbls[p_var]['auc'][0]))
     plt.plot([-0.01, 1.01], [-0.01, 1.01], color='navy', lw=lw, linestyle='--')
     plt.xlim([-0.01, 1.01])
     plt.ylim([-0.01, 1.01])

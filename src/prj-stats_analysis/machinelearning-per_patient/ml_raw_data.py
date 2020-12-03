@@ -88,6 +88,9 @@ pd_mmar_sum = mmar_agg_per_vessel(pd_mmar, 'sum')
 qsel_confirm = "SELECT tblConfirmCONFIRM.* FROM tblConfirmCONFIRM;"
 pd_confirm = db_query(path_db, qsel_confirm)
 
+# In[ ] CONFIRM DATA - ADDRESS MISSING VALUES
+pd_confirm['fram_risk_confirm'] = pd_confirm['fram_risk_confirm'].fillna(pd_confirm['fram_risk_confirm'].mean())
+                                                                         
 # In[ ] COMBINE DATA - MERGE DATAFRAMES
 PD_COMBINED_MAX = pd_mmar_max.merge(pd_confirm, how='left', on='confirm_idc')
 PD_COMBINED_MIN = pd_mmar_min.merge(pd_confirm, how='left', on='confirm_idc')

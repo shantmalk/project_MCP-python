@@ -131,3 +131,9 @@ labels = {'ml_output' : 'Machine Learning',
 
 figure_fname_label = figure_label.lower().replace(' ', '')
 fig, roc_tbl = lib_prj.visualize.roc_plot(df_test, outcome_var, predictor_var, labels)
+
+# In[ ] K-CLUSTERING
+from sklearn.cluster import KMeans
+import numpy as np
+
+kmeans_mmar_perc = KMeans(n_clusters=5, random_state=0).fit(df[['mass_mcp_perc', 'lesion_culprit_ica_ct']].values)
