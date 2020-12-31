@@ -10,7 +10,7 @@ import ml_raw_data
 import pandas as pd
 
 df = ml_raw_data.PD_COMBINED
-features = ml_feature_selection.FEATURES # limit to top 10 for now.
+features = ml_feature_selection.FEATURES[:10] # limit to top 10 for now.
 ml_feature_selection.view_features_variance(features, ml_feature_selection.OUTCOME, '')
 
 # In[ ] AdaBoost Classifier (ensembe classifier?)
@@ -104,26 +104,17 @@ df_test['fram_risk_confirm'] = df_test['fram_risk_confirm'].fillna(df['fram_risk
 
 df_test['ml_output'] = model.predict_proba(df_test[features['index']])[:, 1]
 # df_test['ml_output'] = model.predict(df_test[features['index']])
-figure_label = 'Figure 2E'
-predictor_var = ['ml_output',
-                 'mmar_total_max',
-                 'mmar_total_min',
-                 'mmar_total_sum',
-                 'mmar_total_mean',
-                 'segment_involvement_score_confir',
-                 'segment_stenosis_score_confirm',
-                 'fram_risk_confirm',
-                 'duke_jeopardy_confirm',
-                 ]
-labels = {'ml_output' : 'Machine Learning',
-          'mmar_total_max' : 'MMAR Max',
-          'mmar_total_min' : 'MMAR Min',
-          'mmar_total_sum' : 'MMAR Sum',
-          'mmar_total_mean' : 'MMAR Mean',
-          'segment_involvement_score_confir' : 'SIS',
-          'segment_stenosis_score_confirm' : 'SSS',
-          'fram_risk_confirm' : 'FRS',
-          'duke_jeopardy_confirm' : 'DUKE',}
+figure_label = 'Per-Patient'
+predictor_var = {'ml_output' : 'Machine Learning',
+                 'mmar_total_max' : 'MMAR Max',
+                 'mmar_total_min' : 'MMAR Min',
+                 'mmar_total_sum' : 'MMAR Sum',
+                 'mmar_total_mean' : 'MMAR Mean',
+                 'segment_involvement_score_confir' : 'SIS',
+                 'segment_stenosis_score_confirm' : 'SSS',
+                 'fram_risk_confirm' : 'FRS',
+                 'duke_jeopardy_confirm' : 'DUKE',}
 
 figure_fname_label = figure_label.lower().replace(' ', '')
-fig, roc_tbl = lib_prj.visualize.roc_plot(df_test, outcome_var, predictor_var, labels)
+fig, roc_tbl = lib_prj.visualize.roc_plot(df_test, outcome_var, predictor_var)
+fig.title(figure_label)

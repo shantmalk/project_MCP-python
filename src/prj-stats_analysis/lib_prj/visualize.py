@@ -395,11 +395,35 @@ def boxplot_plotly(pd_data, args_plotly, axis_labels):
     
     # Add addt parameters to args_plotly
     args_plotly['title'] = '<b>' + args_plotly['title'] + '</b>'
-
     fig = px.box(pd_data, **args_plotly)
-            
     return fig
     
+def scatter_plotly(pd_data, args_plotly, axis_labels):
+    '''
+    Simple wrapper for boxplots using Plotly.  This ensures uniform formatting across different uses of boxplot.  
+    Write the boxplot outside of function.
+
+    Parameters
+    ----------
+    pd_data : Pandas array
+        Pandas array of data.
+    args_plotly : dict
+        Dictionary of inputs to pass to Plotly when formatting/creating boxplot.  Keys must be arguments of px.box function.
+    axis_labels : TYPE
+        Dictionary of axis labels.
+
+    Returns
+    -------
+    fig : Plotly figure
+        Plotly boxplot.
+
+    '''
+    
+    # Add addt parameters to args_plotly
+    args_plotly['title'] = '<b>' + args_plotly['title'] + '</b>'
+    fig = px.scatter(pd_data, **args_plotly)
+    return fig
+
 def plotly_clear_fig():
     if os.path.exists(lib_prj.paths.PATH_PLOTLY_TEMP):
         shutil.rmtree(lib_prj.paths.PATH_PLOTLY_TEMP)

@@ -13,7 +13,7 @@ import lib_prj
 from plotly.offline import plot
 
 dir_main = 'C:/Users/smalk/Desktop/research/prj-mcp'
-path_db = dir_main + '/data/database/db_CONFIRM-merged.accdb'
+path_db = dir_main + '/data/database/db_CREDENCE.accdb'
 
 # DEFINE FUNCTION:  db_query
 def db_query(path_db:str, qsel:str) -> "pd.DataFrame":
@@ -74,17 +74,32 @@ def view_combined_per_vessel(df:'pd.DataFrame', title):
 
 
 # In[ ] MMAR DATA - LOAD DATA
-qsel_mmar = "SELECT tblMCP.id_vessel_study, tblMCP.mass_mcp_perc, tblMCP.mass_mcp_g, tblMCP.id_main_vessel FROM tblMCP WHERE (((tblMCP.id_vessel) Like '%dist%'));"
-pd_mmar = db_query(path_db, qsel_mmar)
-pd_mmar = pd_mmar.rename(columns={'id_vessel_study' : 'lesion_id'})
+qsel_mmar = 'SELECT * FROM tblqselMCP;'
 
-# In[ ] CONFIRM DATA - LOAD DATA
-qsel_confirm = "SELECT tblConfirmPerLesion.* FROM tblConfirmPerLesion;"
-pd_confirm = db_query(path_db, qsel_confirm)
-pd_confirm['lesion_culprit_ica_ct'] = pd.to_numeric(pd_confirm['lesion_culprit_ica_ct'], errors='coerce').fillna(0)
-# pd_confirm['fram_risk_confirm'] = pd_confirm['fram_risk_confirm'].fillna(pd_confirm['fram_risk_confirm'].mean())
+
+pd_mmar = db_query(path_db, qsel_mmar)
+pd_mmar = pd_mmar.rename(columns={'id_vessel_comb' : 'lesion_id',
+                                  'tblmcp_mass_mcp_g' : 'mass_mcp_g',
+                                  'qselmcp-mainvessel_mass_mcp_g' : 'mass_main_vessel_mcp_g',
+                                  })
+pd_mmar['mass_mcp_perc_lv'] = pd_mmar['mass_mcp_g'] / pd_mmar['mass_lv_g'] * 100
+pd_mmar['mass_mcp_perc_reg'] = pd_mmar['mass_mcp_g'] / pd_mmar['mass_main_vessel_mcp_g'] * 100
+
+# In[ ] CREDENCE DATA - LOAD DATA - VESSEL
+qsel_cre_vessel = "SELECT * FROM [CREDENCE-VESSEL];"
+pd_cre_vessel = db_query(path_db, qsel_cre_vessel)
+pd_cre_vessel = pd_cre_vessel.rename(columns={'id_vessel' : 'lesion_id'})
+
+# In[ ] CREDENCE DATA - LOAD DATA - MPI
+qsel_cre_mpi = "SELECT * FROM [CREDENCE-MPI_OVERALL];"
+pd_cre_mpi = db_query(path_db, qsel_cre_mpi)
+pd_cre_mpi = pd_cre_mpi.rename(columns={'id_vessel' : 'lesion_id'})
+
 # In[ ] COMBINE DATA - MERGE DATAFRAMES
-PD_COMBINED = pd_mmar.merge(pd_confirm, how='left', on='lesion_id')
+PD_COMBINED = pd_mmar.merge(pd_cre_vessel, how='left', on='lesion_id')
+PD_COMBINED = PD_COMBINED.merge(pd_cre_mpi, how='left', on='lesion_id')
+PD_CRE = pd_cre_mpi.merge(pd_cre_vessel, how='left', on='lesion_id')
+PD_MMAR = pd_mmar
 
 # In[ ] BASIC FIGURES
 

@@ -61,9 +61,9 @@ print(metric_str.format(METHOD=stat_method, METRIC='PVALUE', VAL=pvalue))
 
 # In[7] Build model - view ROC
 
-df_test = testing.copy()
+df_test = df.copy()
 
-df_test['ml_output'] = model.predict_proba(df_test[ft['feature']])[:, 1]
+# df_test['ml_output'] = model.predict_proba(df_test[ft['feature']])[:, 1]
 # df_test['ml_output'] = model.predict(df_test[features['feature']])
 
 figure_label = 'MODEL - ADABOOST - PER-PATIENT\n(using test cohort)'

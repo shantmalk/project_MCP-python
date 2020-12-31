@@ -106,18 +106,7 @@ df_test = df.copy()
 
 df_test['ml_output'] = model.predict_proba(df_test[features['index']])[:, 1]
 # df_test['ml_output'] = model.predict(df_test[features['index']])
-figure_label = 'Figure 2E'
-predictor_var = ['ml_output',
-                 'mass_mcp_perc',
-                 'mass_mcp_g',
-                 'vesselvolume_lesion',
-                 'lumenvolume_lesion',
-                 'lumenminimaldiameter',
-                 'lesion_worst',
-                 'mmar_vessel_vol',
-                 'vesselwallremodelingindex',
-                 'omlddistance',
-                 ]
+figure_label = 'Per-Lesion'
 labels = {'ml_output' : 'Machine Learning',
           'mass_mcp_perc' : 'MMAR(%)',
           'mass_mcp_g' : 'MMAR(g)',
@@ -130,7 +119,8 @@ labels = {'ml_output' : 'Machine Learning',
           'omlddistance' : 'Distance to MLD'}
 
 figure_fname_label = figure_label.lower().replace(' ', '')
-fig, roc_tbl = lib_prj.visualize.roc_plot(df_test, outcome_var, predictor_var, labels)
+fig, roc_tbl = lib_prj.visualize.roc_plot(df_test, outcome_var, labels)
+fig.title(figure_label)
 
 # In[ ] K-CLUSTERING
 from sklearn.cluster import KMeans
