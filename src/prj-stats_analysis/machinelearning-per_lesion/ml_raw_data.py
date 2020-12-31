@@ -12,8 +12,11 @@ import seaborn as sns
 import lib_prj
 from plotly.offline import plot
 
-dir_main = 'C:/Users/smalk/Desktop/research/prj-mcp'
-path_db = dir_main + '/data/database/db_CONFIRM-merged.accdb'
+# dir_main = 'C:/Users/smalk/Desktop/research/prj-mcp'
+# path_db = dir_main + '/data/database/db_CONFIRM-merged.accdb'
+
+dir_main = 'C:/Users/smalk/OneDrive/Desktop/python-dev/prj-mcp-analysis'
+path_db = dir_main + '/data/db_CONFIRM-merged.accdb'
 
 # DEFINE FUNCTION:  db_query
 def db_query(path_db:str, qsel:str) -> "pd.DataFrame":
@@ -82,6 +85,7 @@ pd_mmar = pd_mmar.rename(columns={'id_vessel_study' : 'lesion_id'})
 qsel_confirm = "SELECT tblConfirmPerLesion.* FROM tblConfirmPerLesion;"
 pd_confirm = db_query(path_db, qsel_confirm)
 pd_confirm['lesion_culprit_ica_ct'] = pd.to_numeric(pd_confirm['lesion_culprit_ica_ct'], errors='coerce').fillna(0)
+pd_confirm['is_hrp'] = (pd_confirm['pr'] + pd_confirm['sc'] + pd_confirm['lap']) > 1
 # pd_confirm['fram_risk_confirm'] = pd_confirm['fram_risk_confirm'].fillna(pd_confirm['fram_risk_confirm'].mean())
 # In[ ] COMBINE DATA - MERGE DATAFRAMES
 PD_COMBINED = pd_mmar.merge(pd_confirm, how='left', on='lesion_id')

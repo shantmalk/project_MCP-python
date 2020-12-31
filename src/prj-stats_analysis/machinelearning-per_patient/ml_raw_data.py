@@ -12,8 +12,11 @@ import seaborn as sns
 import lib_prj
 from plotly.offline import plot
 
-dir_main = 'C:/Users/smalk/Desktop/research/prj-mcp'
-path_db = dir_main + '/data/database/db_CONFIRM-merged.accdb'
+# dir_main = 'C:/Users/smalk/Desktop/research/prj-mcp'
+# path_db = dir_main + '/data/database/db_CONFIRM-merged.accdb'
+
+dir_main = 'C:/Users/smalk/OneDrive/Desktop/python-dev/prj-mcp-analysis'
+path_db = dir_main + '/data/db_CONFIRM-merged.accdb'
 
 # DEFINE FUNCTION:  db_query
 def db_query(path_db:str, qsel:str) -> "pd.DataFrame":
@@ -44,11 +47,11 @@ def clean_cols(df:'pd.DataFrame') -> 'pd.DateFrame':
 
 # DEFINE FUNCTION: mmar_agg
 def mmar_agg_per_vessel(df:'pd.DataFrame', agg_func, tag='') -> 'pd.Dataframe':
-    df_agg = df.groupby(['id_patient', 'id_main_vessel'], as_index=False).agg(agg_func)
-    df_agg = df_agg.pivot(index='id_patient', columns='id_main_vessel', values='mass_mcp_perc').rename(columns={'lad' : 'mmar_lad' + tag, 'lcx' : 'mmar_lcx' + tag, 'rca' : 'mmar_rca' + tag}).fillna(0)
+    df_agg = df.groupby(['confirm_idc', 'id_main_vessel'], as_index=False).agg(agg_func)
+    df_agg = df_agg.pivot(index='confirm_idc', columns='id_main_vessel', values='mass_mcp_perc').rename(columns={'lad' : 'mmar_lad' + tag, 'lcx' : 'mmar_lcx' + tag, 'rca' : 'mmar_rca' + tag}).fillna(0)
     df_agg['mmar_total' + tag] = df_agg.sum(axis=1)
     df_agg['mmar_agg_type'] = agg_func
-    return df_agg.reset_index().rename(columns={'id_patient' : 'confirm_idc'})
+    return df_agg.reset_index()
 
 # DEFINE FUNCTION: view_combined_per_vessel
 def view_combined_per_vessel(df:'pd.DataFrame', title):
@@ -63,7 +66,7 @@ def view_combined_per_vessel(df:'pd.DataFrame', title):
     figure_label = 'MMAR Max'
     y_data = 'mmar'
     y_label = 'MMAR (%)'
-    figure_fname_lable = figure_label.lower().replace(' ', '')
+    figure_fname_label = figure_label.lower().replace(' ', '')
     args_plotly['y'] = [y_data]
     args_plotly['title'] = title
     fig = lib_prj.visualize.boxplot_plotly(df_melt, args_plotly, '')
@@ -73,36 +76,47 @@ def view_combined_per_vessel(df:'pd.DataFrame', title):
     plot_url = plot(fig, filename=title.replace(' ','_') + '.html')
 
 
-# In[ ] MMAR DATA - LOAD DATA
-qsel_mmar = "SELECT tblMCP.id_patient, tblMCP.mass_mcp_perc, tblMCP.id_main_vessel FROM tblMCP WHERE (((tblMCP.id_vessel) Like '%dist%'));"
-pd_mmar = db_query(path_db, qsel_mmar)
+# In[ ] CONFIRM DATA - LOAD DATA
+qsel_confirm = "SELECT tblConfirmCONFIRM.* FROM tblConfirmCONFIRM;"
+pd_confirm = db_query(path_db, qsel_confirm)
 
+qsel_lesion = "SELECT tblConfirmPerLesion.* FROM tblConfirmPerLesion;"
+pd_lesion = db_query(path_db, qsel_lesion)
+pd_lesion['lesion_culprit_ica_ct'] = pd.to_numeric(pd_lesion['lesion_culprit_ica_ct'], errors='coerce').fillna(0)
+pd_lesion['is_hrp'] = (pd_lesion['pr'] + pd_lesion['sc'] + pd_lesion['lap']) > 1
+
+# In[ ] CONFIRM DATA - ADDRESS MISSING VALUES
+pd_confirm['fram_risk_confirm'] = pd_confirm['fram_risk_confirm'].fillna(pd_confirm['fram_risk_confirm'].mean())
+
+# In[ ] MMAR DATA - LOAD DATA
+qsel_mmar = "SELECT tblMCP.id_patient, tblMCP.id_vessel_study, tblMCP.mass_mcp_perc, tblMCP.id_main_vessel FROM tblMCP WHERE (((tblMCP.id_vessel) Like '%dist%'));"
+pd_mmar = db_query(path_db, qsel_mmar)
+pd_mmar = pd_mmar.reset_index().rename(columns={'id_patient' : 'confirm_idc', 'id_vessel_study' : 'lesion_id'})
+pd_mmar = pd_mmar.merge(pd_lesion[['lesion_id', 'is_hrp']], how='left', on='lesion_id')
+# pd_mmar = pd_mmar.loc[pd_mmar['is_hrp']] # REMOVE/CHANGE THIS LINE TO FILTER LESIONS TO ASSESS!
 
 # In[ ] MMAR DATA - AGGREGATE
 pd_mmar_max = mmar_agg_per_vessel(pd_mmar, 'max')
 pd_mmar_min = mmar_agg_per_vessel(pd_mmar, 'min')
 pd_mmar_mean = mmar_agg_per_vessel(pd_mmar, 'mean')
 pd_mmar_sum = mmar_agg_per_vessel(pd_mmar, 'sum')
+pd_mmar_count = mmar_agg_per_vessel(pd_mmar, 'count')
 
-# In[ ] CONFIRM DATA - LOAD DATA
-qsel_confirm = "SELECT tblConfirmCONFIRM.* FROM tblConfirmCONFIRM;"
-pd_confirm = db_query(path_db, qsel_confirm)
-
-# In[ ] CONFIRM DATA - ADDRESS MISSING VALUES
-pd_confirm['fram_risk_confirm'] = pd_confirm['fram_risk_confirm'].fillna(pd_confirm['fram_risk_confirm'].mean())
-                                                                         
+                  
 # In[ ] COMBINE DATA - MERGE DATAFRAMES
 PD_COMBINED_MAX = pd_mmar_max.merge(pd_confirm, how='left', on='confirm_idc')
 PD_COMBINED_MIN = pd_mmar_min.merge(pd_confirm, how='left', on='confirm_idc')
 PD_COMBINED_MEAN = pd_mmar_mean.merge(pd_confirm, how='left', on='confirm_idc')
 PD_COMBINED_SUM = pd_mmar_sum.merge(pd_confirm, how='left', on='confirm_idc')
+PD_COMBINED_COUNT = pd_mmar_count.merge(pd_confirm, how='left', on='confirm_idc')
 # PD_COMBINED = pd.concat([PD_COMBINED_MAX, PD_COMBINED_MIN, PD_COMBINED_MEAN, PD_COMBINED_SUM])
 
 PD_COMBINED = mmar_agg_per_vessel(pd_mmar, 'max', '_max').merge(pd_confirm, how='left', on='confirm_idc')
 PD_COMBINED = PD_COMBINED.merge(mmar_agg_per_vessel(pd_mmar, 'min', '_min'), how='left', on='confirm_idc')
 PD_COMBINED = PD_COMBINED.merge(mmar_agg_per_vessel(pd_mmar, 'mean', '_mean'), how='left', on='confirm_idc')
 PD_COMBINED = PD_COMBINED.merge(mmar_agg_per_vessel(pd_mmar, 'sum', '_sum'), how='left', on='confirm_idc')
-
+PD_COMBINED = PD_COMBINED.merge(mmar_agg_per_vessel(pd_mmar, 'count', '_n'), how='left', on='confirm_idc')
+PD_LESION = pd_lesion
 # In[ ] BASIC FIGURES
 
 
