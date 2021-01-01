@@ -5,7 +5,7 @@ Created on Wed Dec 30 08:00:26 2020
 @author: smalk
 """
 
-import ml_raw_data
+import raw_data
 import lib_prj.process as prc
 import lib_prj.visualize as viz
 import params
@@ -14,6 +14,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
 import pandas as pd
 from lifelines import CoxPHFitter
+from lifelines import KaplanMeierFitter
 import matplotlib.pyplot as plt
 
 # In[1] Raw data
@@ -21,19 +22,15 @@ cols = params.COLUMNS
 blacklist = params.BLACKLIST
 outcome = 'macelr_event_confirm'
 
-df = ml_raw_data.PD_COMBINED
-df_lesion = ml_raw_data.PD_LESION
-
-# In[2] Clean data
-# updated_cols = prc.clean_df(df.reset_index(), cols, blacklist)
+df = raw_data.PD_COMBINED
+df_lesion = raw_data.PD_LESION
 
 # In[3] ROC-AUC ANALYSIS - USING HRP MMAR ONLY
 outcome = 'macelr_event_confirm'
 figure_label = 'Per-Patient:  High-risk plaque features [Outcome = ' + outcome + ']'
-labels = {'mmar_total_max' : 'MMAR<MAX>',
-          'mmar_total_mean' : 'MMAR<MEAN>',
-          'mmar_total_sum' : 'MMAR<SUM>',
-          # 'mmar_total_mean' : 'MMAR<sub>MEAN</sub>',
+labels = {'mmar_all_max' : 'MMAR<MAX>',
+          'mmar_all_mean' : 'MMAR<MEAN>',
+          'mmar_all_sum' : 'MMAR<SUM>',
           }
 description = '''
 AUC analysis demonstrates the value of several high-risk plaque features, to predict the culprit lesion leading to MI in patients with multivessel CAD.
@@ -43,27 +40,7 @@ fig, roc_tbl = viz.roc_plot(df, outcome, labels)
 fig.title(figure_label)
 
 # In[3] DESCRIPTIVE ANALYSIS - USING ALL DATA
-outcome = 'mi_event'
-figure_label = 'Per-Patient:  High-risk plaque features [Outcome = ' + outcome + ']'
-labels = {'mmar_total_max' : 'MMAR<MAX>',
-          'mmar_total_mean' : 'MMAR<MEAN>',
-          'mmar_total_sum' : 'MMAR<SUM>',
-          'mmar_total_max_hrp' : 'MMAR<HRP_MAX>',
-          'mmar_total_mean_hrp' : 'MMAR<HRP_MEAN>',
-          'mmar_total_sum_hrp' : 'MMAR<HRP_SUM>',
-          'mmar_total_max_lrp' : 'MMAR<LRP_MAX>',
-          'mmar_total_mean_lrp' : 'MMAR<LRP_MEAN>',
-          'mmar_total_sum_lrp' : 'MMAR<LRP_SUM>',
-          }
-description = '''
-AUC analysis demonstrates the value of several high-risk plaque features, to predict the culprit lesion leading to MI in patients with multivessel CAD.
-'''
-figure_fname_label = figure_label.lower().replace(' ', '')
-fig, roc_tbl = viz.roc_plot(df, outcome, labels)
-fig.title(figure_label)
-
-# In[3] DESCRIPTIVE ANALYSIS - USING ALL DATA
-vessel = 'total'
+vessel = 'all'
 outcome = 'mi_event'
 figure_label = 'Per-Patient:  High-risk plaque features [Outcome = ' + outcome + ']' + ' VESSEL: ' + vessel
 labels = {'mmar_' + vessel + '_max' : 'MMAR<MAX>',
@@ -88,7 +65,7 @@ fig.title(figure_label)
 title=''
 args_plotly = {
     'x' : outcome,
-    'y' : 'mmar_total_n',
+    'y' : 'mmar_all_n',
     'points' : 'all',
     'labels' : {outcome : 'MACE'},
     'title' : title,
@@ -98,73 +75,16 @@ fig.update_yaxes(title='MMAR<sub>N</sub>')
 fig.update_xaxes(title='')
 plot_url = plot(fig, filename=title.replace(' ','_') + '.html')
 
-
-# In[ ]
-outcome='mi_event'
-vessel = 'lad'
-mmar_hrp = ml_raw_data.pd_mmar_mean_hrp[['confirm_idc', 'mmar_' + vessel + '_hrp', 'mmar_agg_type']].rename(columns={'mmar_' + vessel + '_hrp' : 'mmar'})
-mmar_hrp['plaque_type'] = 'hrp'
-mmar_lrp = ml_raw_data.pd_mmar_mean_lrp[['confirm_idc', 'mmar_' + vessel + '_lrp', 'mmar_agg_type']].rename(columns={'mmar_' + vessel + '_lrp' : 'mmar'})
-mmar_lrp['plaque_type'] = 'lrp'
-mmar_total = ml_raw_data.pd_mmar_mean[['confirm_idc', 'mmar_' + vessel, 'mmar_agg_type']].rename(columns={'mmar_' + vessel : 'mmar'})
-mmar_total['plaque_type'] = 'all'
-
-df_descriptive = pd.concat([mmar_hrp, mmar_lrp, mmar_total])
-df_descriptive = df_descriptive.merge(df[['confirm_idc', 'mi_event', 'mi_time']], how='left', on='confirm_idc')
-
-title='Per-Patient: MMAR<sub>MEAN</sub> based on plaque type'
-fname = 'per_patient_mmar_mean_plaquetype'
-# args_plotly = {
-#     'x' : outcome,
-#     'y' : 'mmar',
-#     'points' : 'all',
-#     'color' : 'plaque_type',
-#     'title' : title,
-#     }
-# fig = viz.boxplot_plotly(df_descriptive, args_plotly, '')
-# fig.update_yaxes(title='MMAR<sub>MEAN</sub>')
-# fig.update_xaxes(title='')
-# plot_url = plot(fig, filename=fname + '.html')
-
-title='Per-Patient: MMAR<sub>MEAN</sub> based on plaque type'
-fname = 'per_patient_mmar_mean_plaquetype'
-args_plotly = {
-    'x' : 'plaque_type',
-    'y' : 'mmar',
-    'points' : 'all',
-    'color' : outcome,
-    'title' : title,
-    }
-fig = viz.boxplot_plotly(df_descriptive, args_plotly, '')
-fig.update_yaxes(title='MMAR<sub>MEAN</sub>')
-fig.update_xaxes(title='')
-plot_url = plot(fig, filename=fname + '.html')
-
-
 # In[ ] DESCRIPTIVE ANALYSIS
-mmar_hrp = ml_raw_data.pd_mmar_mean_hrp[['confirm_idc', 'mmar_total_hrp', 'mmar_agg_type']].rename(columns={'mmar_total_hrp' : 'mmar'})
+mmar_hrp = raw_data.pd_mmar_mean_hrp[['confirm_idc', 'mmar_all_hrp', 'mmar_agg_type']].rename(columns={'mmar_all_hrp' : 'mmar'})
 mmar_hrp['plaque_type'] = 'hrp'
-mmar_lrp = ml_raw_data.pd_mmar_mean_lrp[['confirm_idc', 'mmar_total_lrp', 'mmar_agg_type']].rename(columns={'mmar_total_lrp' : 'mmar'})
+mmar_lrp = raw_data.pd_mmar_mean_lrp[['confirm_idc', 'mmar_all_lrp', 'mmar_agg_type']].rename(columns={'mmar_all_lrp' : 'mmar'})
 mmar_lrp['plaque_type'] = 'lrp'
-mmar_total = ml_raw_data.pd_mmar_mean[['confirm_idc', 'mmar_total', 'mmar_agg_type']].rename(columns={'mmar_total' : 'mmar'})
+mmar_total = raw_data.pd_mmar_mean[['confirm_idc', 'mmar_all', 'mmar_agg_type']].rename(columns={'mmar_all' : 'mmar'})
 mmar_total['plaque_type'] = 'all'
 
 df_descriptive = pd.concat([mmar_hrp, mmar_lrp, mmar_total])
 df_descriptive = df_descriptive.merge(df[['confirm_idc', 'mi_event', 'mi_time']], how='left', on='confirm_idc')
-
-title='Per-Patient: MMAR<sub>MEAN</sub> based on plaque type'
-fname = 'per_patient_mmar_mean_plaquetype'
-# args_plotly = {
-#     'x' : outcome,
-#     'y' : 'mmar',
-#     'points' : 'all',
-#     'color' : 'plaque_type',
-#     'title' : title,
-#     }
-# fig = viz.boxplot_plotly(df_descriptive, args_plotly, '')
-# fig.update_yaxes(title='MMAR<sub>MEAN</sub>')
-# fig.update_xaxes(title='')
-# plot_url = plot(fig, filename=fname + '.html')
 
 title='Per-Patient: MMAR<sub>MEAN</sub> based on plaque type'
 fname = 'per_patient_mmar_mean_plaquetype'
@@ -181,14 +101,14 @@ fig.update_xaxes(title='')
 plot_url = plot(fig, filename=fname + '.html')
 
 # In[ ]
-mmar_hrp = ml_raw_data.pd_mmar_sum_hrp[['confirm_idc', 'mmar_total_hrp', 'mmar_agg_type']].rename(columns={'mmar_total_hrp' : 'mmar'})
+mmar_hrp = raw_data.pd_mmar_sum_hrp[['confirm_idc', 'mmar_all_hrp', 'mmar_agg_type']].rename(columns={'mmar_all_hrp' : 'mmar'})
 mmar_hrp['plaque_type'] = 'hrp'
-mmar_lrp = ml_raw_data.pd_mmar_sum_lrp[['confirm_idc', 'mmar_total_lrp', 'mmar_agg_type']].rename(columns={'mmar_total_lrp' : 'mmar'})
+mmar_lrp = raw_data.pd_mmar_sum_lrp[['confirm_idc', 'mmar_all_lrp', 'mmar_agg_type']].rename(columns={'mmar_all_lrp' : 'mmar'})
 mmar_lrp['plaque_type'] = 'lrp'
-mmar_total = ml_raw_data.pd_mmar_sum[['confirm_idc', 'mmar_total', 'mmar_agg_type']].rename(columns={'mmar_total' : 'mmar'})
-mmar_total['plaque_type'] = 'all'
+mmar_all = raw_data.pd_mmar_sum[['confirm_idc', 'mmar_all', 'mmar_agg_type']].rename(columns={'mmar_all' : 'mmar'})
+mmar_all['plaque_type'] = 'all'
 
-df_descriptive = pd.concat([mmar_hrp, mmar_lrp, mmar_total])
+df_descriptive = pd.concat([mmar_hrp, mmar_lrp, mmar_all])
 df_descriptive = df_descriptive.merge(df[['confirm_idc', 'mi_event', 'mi_time']], how='left', on='confirm_idc')
 
 title='Per-Patient: MMAR<sub>SUM</sub> based on plaque type'
@@ -206,14 +126,14 @@ fig.update_xaxes(title='')
 plot_url = plot(fig, filename=fname + '.html')
 
 # In[ ]
-mmar_hrp = ml_raw_data.pd_mmar_max_hrp[['confirm_idc', 'mmar_total_hrp', 'mmar_agg_type']].rename(columns={'mmar_total_hrp' : 'mmar'})
+mmar_hrp = raw_data.pd_mmar_max_hrp[['confirm_idc', 'mmar_all_hrp', 'mmar_agg_type']].rename(columns={'mmar_all_hrp' : 'mmar'})
 mmar_hrp['plaque_type'] = 'hrp'
-mmar_lrp = ml_raw_data.pd_mmar_max_lrp[['confirm_idc', 'mmar_total_lrp', 'mmar_agg_type']].rename(columns={'mmar_total_lrp' : 'mmar'})
+mmar_lrp = raw_data.pd_mmar_max_lrp[['confirm_idc', 'mmar_all_lrp', 'mmar_agg_type']].rename(columns={'mmar_all_lrp' : 'mmar'})
 mmar_lrp['plaque_type'] = 'lrp'
-mmar_total = ml_raw_data.pd_mmar_max[['confirm_idc', 'mmar_total', 'mmar_agg_type']].rename(columns={'mmar_total' : 'mmar'})
-mmar_total['plaque_type'] = 'all'
+mmar_all = raw_data.pd_mmar_max[['confirm_idc', 'mmar_all', 'mmar_agg_type']].rename(columns={'mmar_all' : 'mmar'})
+mmar_all['plaque_type'] = 'all'
 
-df_descriptive = pd.concat([mmar_hrp, mmar_lrp, mmar_total])
+df_descriptive = pd.concat([mmar_hrp, mmar_lrp, mmar_all])
 df_descriptive = df_descriptive.merge(df[['confirm_idc', 'mi_event', 'mi_time']], how='left', on='confirm_idc')
 
 title='Per-Patient: MMAR<sub>MAX</sub> based on plaque type'
@@ -231,14 +151,14 @@ fig.update_xaxes(title='')
 plot_url = plot(fig, filename=fname + '.html')
 
 # In[ ]
-mmar_hrp = ml_raw_data.pd_mmar_min_hrp[['confirm_idc', 'mmar_total_hrp', 'mmar_agg_type']].rename(columns={'mmar_total_hrp' : 'mmar'})
+mmar_hrp = raw_data.pd_mmar_min_hrp[['confirm_idc', 'mmar_all_hrp', 'mmar_agg_type']].rename(columns={'mmar_all_hrp' : 'mmar'})
 mmar_hrp['plaque_type'] = 'hrp'
-mmar_lrp = ml_raw_data.pd_mmar_min_lrp[['confirm_idc', 'mmar_total_lrp', 'mmar_agg_type']].rename(columns={'mmar_total_lrp' : 'mmar'})
+mmar_lrp = raw_data.pd_mmar_min_lrp[['confirm_idc', 'mmar_all_lrp', 'mmar_agg_type']].rename(columns={'mmar_all_lrp' : 'mmar'})
 mmar_lrp['plaque_type'] = 'lrp'
-mmar_total = ml_raw_data.pd_mmar_min[['confirm_idc', 'mmar_total', 'mmar_agg_type']].rename(columns={'mmar_total' : 'mmar'})
-mmar_total['plaque_type'] = 'all'
+mmar_all = raw_data.pd_mmar_min[['confirm_idc', 'mmar_all', 'mmar_agg_type']].rename(columns={'mmar_all' : 'mmar'})
+mmar_all['plaque_type'] = 'all'
 
-df_descriptive = pd.concat([mmar_hrp, mmar_lrp, mmar_total])
+df_descriptive = pd.concat([mmar_hrp, mmar_lrp, mmar_all])
 df_descriptive = df_descriptive.merge(df[['confirm_idc', 'mi_event', 'mi_time']], how='left', on='confirm_idc')
 
 title='Per-Patient: MMAR<sub>MIN</sub> based on plaque type'
@@ -261,10 +181,15 @@ plot_url = plot(fig, filename=fname + '.html')
 
 # In[5] CLASSIFICATION REPORT
 print(classification_report(df_lesion['lesion_culprit_ica_ct'], df_lesion['is_hrp']))
-df['is_n_hrp'] = df['mmar_total_n'] > 3
+df['is_n_hrp'] = df['mmar_all_n_hrp'] > 0
 print(classification_report(df['macelr_event_confirm'], df['is_n_hrp']))
 
 # In[6] HAZARD 
+q_cutoff = .75
+
+cutoff_thresh_mean = df['mmar_all_mean_hrp'].quantile([q_cutoff])[q_cutoff]
+cutoff_thresh_max = df['mmar_all_max_hrp'].quantile([q_cutoff])[q_cutoff]
+cutoff_thresh_sum = df['mmar_all_sum_hrp'].quantile([q_cutoff])[q_cutoff]
 
 # ARBITRARY CUTOFFS - GIVES GOOD RESULTS FOR MMAR_HRP
 
@@ -278,18 +203,27 @@ cutoff_thresh_mean = 8.092689 + cutoff_thresh_mean
 cutoff_thresh_max = 19.71345 + cutoff_thresh_max
 cutoff_thresh_sum = 19.71345 + cutoff_thresh_sum
 
-cutoff_thresh_mean = 25
-cutoff_thresh_max = 60
-cutoff_thresh_sum = 60
+cutoff_thresh_mean = 10
+cutoff_thresh_max = 15
+cutoff_thresh_sum = 15
 
 print('========= HRP LESIONS =========')
 plt.figure() 
 df_dummy = pd.DataFrame()
 df_dummy['outcome_event'] = df['mi_event']
 df_dummy['outcome_time'] = df['mi_time']
-df_dummy['mmar_sum_hrp_cutoff'] = df['mmar_total_sum_hrp'] > cutoff_thresh_sum
-df_dummy['mmar_max_hrp_cutoff'] = df['mmar_total_max_hrp'] > cutoff_thresh_max
-df_dummy['mmar_mean_hrp_cutoff'] = df['mmar_total_mean_hrp'] > cutoff_thresh_mean
+df_dummy['mmar'] = df['mmar_all_mean_hrp']
+df_dummy['hrp'] = df['mmar_all_n_hrp'].fillna(0)
+df_dummy['SSS'] = df['segment_stenosis_score_confirm']
+# df_dummy['bmi'] = df['bmi_confirm'].fillna(0)
+# df_dummy['age'] = df['age_confirm'].fillna(0)
+# df_dummy['sex'] = df['sex_confirm'].fillna(0)
+# df_dummy['htn'] = df['htn_confirm'].fillna(0)
+# df_dummy['dm'] = df['dm_confirm'].fillna(0)
+# df_dummy['chol'] = df['chol_confirm'].fillna(0)
+# df_dummy['mmar_max_hrp_cutoff'] = df['mmar_all_max_hrp'] > cutoff_thresh_max
+# df_dummy['mmar_mean_hrp_cutoff'] = df['mmar_all_mean_hrp'] > cutoff_thresh_mean
+# df_dummy['hrp'] = df['mmar_all_n_hrp'] > 
 cph = CoxPHFitter()
 cph.fit(df_dummy, 'outcome_time', event_col='outcome_event')
 cph.print_summary()
@@ -320,6 +254,29 @@ cph.plot()
 # cph.fit(df_dummy, 'outcome_time', event_col='outcome_event')
 # cph.print_summary()
 # cph.plot()
+
+# In[ ] KMS ANALYSIS
+q_cutoff = .75
+
+cutoff_thresh_mean = df['mmar_all_mean_hrp'].quantile([q_cutoff])[q_cutoff]
+cutoff_thresh_max = df['mmar_all_max_hrp'].quantile([q_cutoff])[q_cutoff]
+cutoff_thresh_sum = df['mmar_all_sum_hrp'].quantile([q_cutoff])[q_cutoff]
+
+print('========= HRP LESIONS =========')
+plt.figure() 
+df_dummy = pd.DataFrame()
+df_dummy['outcome_event'] = df['mi_event']
+df_dummy['outcome_time'] = df['mi_time']
+df_dummy['mmar_hrp_cutoff'] = df['mmar_all_max_hrp'] > cutoff_thresh_max
+
+kmf = KaplanMeierFitter()
+i1 = df_dummy['mmar_hrp_cutoff'] == True
+i2 = df_dummy['mmar_hrp_cutoff'] == False
+kmf.fit(durations = df_dummy['outcome_time'][i1], event_observed = df_dummy['outcome_event'][i1], label = 'MMAR > CUTOFF')
+a1 = kmf.plot()
+kmf.fit(df_dummy['outcome_time'][i2], df_dummy['outcome_event'][i2], label = 'MMAR < CUTOFF')
+kmf.plot(ax=a1)
+
 
 
 

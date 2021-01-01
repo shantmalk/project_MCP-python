@@ -12,6 +12,104 @@ from statsmodels.formula.api import ols
 from plotly.offline import plot
 from plotly.express import bar
 from scipy.stats import entropy
+import pyodbc
+
+# DEFINE FUNCTION: mmar_agg
+def mmar_agg_per_vessel(df:'pd.DataFrame', agg_func:'str', tag='', mmar_col='mass_mcp_perc') -> 'pd.Dataframe':
+    """
+    mmar_agg_per_vessel aggregates myocardial mass at-risk (MMAR) per-patient, for LAD/LCx/RCA.  Function is specifically used to process CONFIRM per-lesion data with MMAR.  The inputted df is outputted with the addition of aggregate columns.
+
+    Parameters
+    ----------
+    df : 'pd.DataFrame'
+        DataFrame of CONFIRM per-lesion data with associated MMAR.
+    agg_func : STR
+        Name of aggregate function to use (ex. max/min/mean/sum/count).
+    tag : STR, optional
+        Column tag to append to new aggregate columns. The default is ''.
+    mmar_col : STR, optional
+        Column containing MMAR data to aggregate. The default is 'mass_mcp_perc'.
+        
+    Returns
+    -------
+    pd.DataFrame
+        Return df with new aggregate columns.  Returned df will have 3 new columns for the LAD, LCx and RCA.  Each column will have aggregated MMAR based on specified agg_func, for each patient.
+
+    """
+    df_agg = df.groupby(['confirm_idc', 'id_main_vessel'], as_index=False).agg(agg_func)
+    df_agg = df_agg.pivot(index='confirm_idc', columns='id_main_vessel', values=mmar_col).rename(columns={'lad' : 'mmar_lad' + tag, 'lcx' : 'mmar_lcx' + tag, 'rca' : 'mmar_rca' + tag}).fillna(0)
+    # df_agg['mmar_total' + tag] = df_agg.sum(axis=1) # THIS IS PROBLEMATIC - THIS SHOULD BE PLACED IN DIFFERENT FUNCTION
+    df_agg['mmar_agg_type'] = agg_func
+    return df_agg.reset_index()
+
+# DEFINE FUNCTION: mmar_agg
+def mmar_agg_per_patient(df:'pd.DataFrame', agg_func:'str', tag='', mmar_col='mass_mcp_perc') -> 'pd.Dataframe':
+    """
+    mmar_agg_per_vessel aggregates myocardial mass at-risk (MMAR) per-patient.  Function is specifically used to process CONFIRM per-lesion data with MMAR.  The inputted df is outputted with the addition of aggregate columns.
+
+    Parameters
+    ----------
+    df : 'pd.DataFrame'
+        DataFrame of CONFIRM per-lesion data with associated MMAR.
+    agg_func : STR
+        Name of aggregate function to use (ex. max/min/mean/sum/count).
+    tag : STR, optional
+        Column tag to append to new aggregate columns. The default is ''.
+    mmar_col : STR, optional
+        Column containing MMAR data to aggregate. The default is 'mass_mcp_perc'.
+        
+    Returns
+    -------
+    pd.DataFrame
+        Return a new DataFrame with aggregate column.  Returned DataFrame will have 1 new column for aggregated MMAR data.  Each row will have aggregated MMAR based on specified agg_func, for each patient.
+
+    """
+    
+    include_cols = ['confirm_idc', mmar_col]
+    df_agg = df[include_cols].groupby(['confirm_idc'], as_index=False).agg(agg_func)
+    df_agg = df_agg.rename(columns={mmar_col : 'mmar_all' + tag}).fillna(0)
+    df_agg['mmar_agg_type'] = agg_func
+    return df_agg.reset_index()
+
+# DEFINE FUNCTION:  clean_cols
+def clean_cols(df:'pd.DataFrame') -> 'pd.DateFrame':
+    """clean_cols runs a few functions to clean data in specified pandas DataFrame
+
+    Parameters
+    ----------
+    df : 'pd.DataFrame'
+        Pandas DataFrame to clean.
+
+    Returns
+    -------
+    df : pd.DataFrame
+        Cleaned pandas DataFrame.
+
+    """
+    df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_').str.replace('(', '').str.replace(')', '')
+    df.columns = df.columns.str.replace('\t','')
+    df.columns = df.columns.str.replace('\ufeff', '')
+    df.columns = df.columns.str.replace("''", '')
+    return df
+
+# DEFINE FUNCTION:  db_query
+def db_query(path_db:str, qsel:str) -> "pd.DataFrame":
+    """db_query queries a database and returns its response
+    This function is used to query a database.  It will return the response from the database as a Pandas dataframe
+    
+    TODO:
+    Check inputs
+    Check outputs
+    Check if path_db exists before execution
+    """
+    path_db_frmt = r'Driver={{Microsoft Access Driver (*.mdb, *.accdb)}};DBQ={PATH};'.format(PATH=path_db)
+    conn = pyodbc.connect(path_db_frmt)
+    db_resp = pd.read_sql_query(qsel, conn)
+    
+    # CLEAN COLUMNS
+    db_resp = db_resp.replace(r'^\s*$', '0', regex=True)
+    db_resp = clean_cols(db_resp)
+    return db_resp
 
 # Set of functions to streamline statistical processing
 def view_features_variance(df:'pd.DataFrame', title:str):

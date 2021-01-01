@@ -13,11 +13,11 @@ import lib_prj
 from plotly.offline import plot
 import numpy as np
 
-dir_main = 'C:/Users/smalk/Desktop/research/prj-mcp'
-path_db = dir_main + '/data/database/db_CONFIRM-merged.accdb'
+# dir_main = 'C:/Users/smalk/Desktop/research/prj-mcp'
+# path_db = dir_main + '/data/database/db_CONFIRM-merged.accdb'
 
-# dir_main = 'C:/Users/smalk/OneDrive/Desktop/python-dev/prj-mcp-analysis'
-# path_db = dir_main + '/data/db_CONFIRM-merged.accdb'
+dir_main = 'C:/Users/smalk/OneDrive/Desktop/python-dev/prj-mcp-analysis'
+path_db = dir_main + '/data/db_CONFIRM-merged.accdb'
 
 # DEFINE FUNCTION:  db_query
 def db_query(path_db:str, qsel:str) -> "pd.DataFrame":
@@ -102,7 +102,8 @@ pd_mmar = pd_mmar.merge(pd_lesion[['lesion_id', 'is_hrp']], how='left', on='lesi
 
 # In[ ]
 df_match_id_count = pd.DataFrame()
-df_match_id_count = pd.unique(pd_mmar[['confirm_idc']]).merge(pd_confirm[['confirm_idc', 'mi_match_id']], how='left', on='confirm_idc')
+df_match_id_count['confirm_idc'] = pd_mmar.confirm_idc.unique()
+df_match_id_count = df_match_id_count.merge(pd_confirm[['confirm_idc', 'mi_match_id']], how='left', on='confirm_idc')
 df_match_id_count = df_match_id_count.groupby(['mi_match_id'], as_index=False).agg('count')
 df_match_id_count = df_match_id_count.loc[df_match_id_count['confirm_idc'] == 2]
 df_match_confirm = pd_confirm['confirm_idc'].loc[pd_confirm['mi_match_id'].isin(df_match_id_count['mi_match_id'])]
