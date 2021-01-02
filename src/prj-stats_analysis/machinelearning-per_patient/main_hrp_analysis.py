@@ -12,10 +12,15 @@ import params
 from plotly.offline import plot
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
+import numpy as np
 import pandas as pd
 from lifelines import CoxPHFitter
 from lifelines import KaplanMeierFitter
+from zepid import RiskRatio
+from scipy.stats import norm
 import matplotlib.pyplot as plt
+import scipy.stats as stats
+from sklearn.metrics import roc_auc_score
 
 # In[1] Raw data
 cols = params.COLUMNS
@@ -277,7 +282,96 @@ a1 = kmf.plot()
 kmf.fit(df_dummy['outcome_time'][i2], df_dummy['outcome_event'][i2], label = 'MMAR < CUTOFF')
 kmf.plot(ax=a1)
 
+# In[ ] Relative Risk - HRP
+q_cutoff = .75
+
+cutoff_thresh_mean = df['mmar_all_mean_hrp'].quantile([q_cutoff])[q_cutoff]
+cutoff_thresh_max = df['mmar_all_max_hrp'].quantile([q_cutoff])[q_cutoff]
+cutoff_thresh_sum = df['mmar_all_sum_hrp'].quantile([q_cutoff])[q_cutoff]
 
 
 
 
+# calculating risk ratio
+exp = 'mmar_mean_cutoff'
+cutoff = cutoff_thresh_mean
+
+df['mmar_mean_cutoff'] = df['mmar_all_mean_hrp'] > cutoff_thresh_mean
+df['mmar_sum_cutoff'] = df['mmar_all_sum_hrp'] > cutoff_thresh_sum
+df['mmar_max_cutoff'] = df['mmar_all_max_hrp'] > cutoff_thresh_max
+
+rr = RiskRatio()
+rr.fit(df, exposure=exp, outcome='mi_event')
+
+# calculating p-value
+est= rr.results['RiskRatio'][1]
+std = rr.results['SD(RR)'][1]
+z_score = np.log(est)/std
+p_value = norm.sf(abs(z_score))*2
+
+print('Exposure: {exp}'.format(exp=exp))
+print('Cutoff: {cutoff:0.2f}'.format(cutoff=cutoff))
+print('Relative Risk: {rr:0.2f}±{std:0.2f} (p-value {pval:0.2f})'.format(rr=est, std=std, pval=p_value))
+
+# In[ ] Relative Risk
+q_cutoff = .75
+outcome = 'mi_event'
+df['mmar_mean_cutoff_lrp'] = df['mmar_all_mean_lrp'] > df['mmar_all_mean_lrp'].quantile([q_cutoff])[q_cutoff]
+df['mmar_sum_cutoff_lrp'] = df['mmar_all_sum_lrp'] > df['mmar_all_sum_lrp'].quantile([q_cutoff])[q_cutoff]
+df['mmar_max_cutoff_lrp'] = df['mmar_all_max_lrp'] > df['mmar_all_max_lrp'].quantile([q_cutoff])[q_cutoff]
+
+df['mmar_mean_cutoff_hrp'] = df['mmar_all_mean_hrp'] > df['mmar_all_mean_hrp'].quantile([q_cutoff])[q_cutoff]
+df['mmar_sum_cutoff_hrp'] = df['mmar_all_sum_hrp'] > df['mmar_all_sum_hrp'].quantile([q_cutoff])[q_cutoff]
+df['mmar_max_cutoff_hrp'] = df['mmar_all_max_hrp'] > df['mmar_all_max_hrp'].quantile([q_cutoff])[q_cutoff]
+
+df_relative_risk = pd.DataFrame(columns=['lbl', 'rr', 'std', 'pval'])
+df_relative_risk = df_relative_risk.append(pd.Series(prc.relative_risk(df, 'mmar_mean_cutoff_lrp', outcome), index=df_relative_risk.columns), ignore_index=True)
+df_relative_risk = df_relative_risk.append(pd.Series(prc.relative_risk(df, 'mmar_sum_cutoff_lrp', outcome), index=df_relative_risk.columns), ignore_index=True)
+df_relative_risk = df_relative_risk.append(pd.Series(prc.relative_risk(df, 'mmar_max_cutoff_lrp', outcome), index=df_relative_risk.columns), ignore_index=True)
+
+df_relative_risk = df_relative_risk.append(pd.Series(prc.relative_risk(df, 'mmar_mean_cutoff_hrp', outcome), index=df_relative_risk.columns), ignore_index=True)
+df_relative_risk = df_relative_risk.append(pd.Series(prc.relative_risk(df, 'mmar_sum_cutoff_hrp', outcome), index=df_relative_risk.columns), ignore_index=True)
+df_relative_risk = df_relative_risk.append(pd.Series(prc.relative_risk(df, 'mmar_max_cutoff_hrp', outcome), index=df_relative_risk.columns), ignore_index=True)
+
+viz.rr_boxplot(df_relative_risk)
+
+# In[ ] Odds Ratio
+df_odds_ratio = pd.DataFrame(columns=['lbl', 'or', 'pval'])
+
+q_cutoff = .75
+outcome = 'mi_event'
+
+exp = 'mmar_mean_cutoff_hrp'
+df_crosstab = pd.crosstab(df[exp], df['mi_event'])
+df_odds_ratio = df_odds_ratio.append(pd.Series([exp, stats.fisher_exact(df_crosstab)[0], stats.fisher_exact(df_crosstab)[1] ], index=df_odds_ratio.columns), ignore_index=True)
+
+exp = 'mmar_max_cutoff_hrp'
+df_crosstab = pd.crosstab(df[exp], df['mi_event'])
+df_odds_ratio = df_odds_ratio.append(pd.Series([exp, stats.fisher_exact(df_crosstab)[0], stats.fisher_exact(df_crosstab)[1] ], index=df_odds_ratio.columns), ignore_index=True)
+
+exp = 'mmar_sum_cutoff_hrp'
+df_crosstab = pd.crosstab(df[exp], df['mi_event'])
+df_odds_ratio = df_odds_ratio.append(pd.Series([exp, stats.fisher_exact(df_crosstab)[0], stats.fisher_exact(df_crosstab)[1] ], index=df_odds_ratio.columns), ignore_index=True)
+
+exp = 'mmar_mean_cutoff_lrp'
+df_crosstab = pd.crosstab(df[exp], df['mi_event'])
+df_odds_ratio = df_odds_ratio.append(pd.Series([exp, stats.fisher_exact(df_crosstab)[0], stats.fisher_exact(df_crosstab)[1] ], index=df_odds_ratio.columns), ignore_index=True)
+
+exp = 'mmar_max_cutoff_lrp'
+df_crosstab = pd.crosstab(df[exp], df['mi_event'])
+df_odds_ratio = df_odds_ratio.append(pd.Series([exp, stats.fisher_exact(df_crosstab)[0], stats.fisher_exact(df_crosstab)[1] ], index=df_odds_ratio.columns), ignore_index=True)
+
+exp = 'mmar_sum_cutoff_lrp'
+df_crosstab = pd.crosstab(df[exp], df['mi_event'])
+df_odds_ratio = df_odds_ratio.append(pd.Series([exp, stats.fisher_exact(df_crosstab)[0], stats.fisher_exact(df_crosstab)[1] ], index=df_odds_ratio.columns), ignore_index=True)
+
+viz.table_basic(df_odds_ratio)
+
+# In[ ] AUC Analysis
+from sklearn.linear_model import LogisticRegression
+
+X = df['mmar_all_mean_hrp']
+y = df['mi_event']
+clf = LogisticRegression(solver="liblinear", random_state=0).fit(X, y)
+roc_auc_score(y, clf.predict_proba(X)[:, 1])
+roc_auc_score(y, clf.decision_function(X))

@@ -28,7 +28,7 @@ from lifelines import CoxPHFitter
 from lifelines.statistics import logrank_test
 
 # TABLES
-def table_basic(pd_data, fpath, row_colors=['#f1f1f2', 'w'], col_labels = [ ], **kwargs):
+def table_basic(pd_data, fpath='tmp.png', row_colors=['#f1f1f2', 'w'], col_labels = [ ], **kwargs):
     '''
     
 
@@ -189,6 +189,20 @@ def table_merge_mean_std(pd_data):
 
 
 # GRAPHS
+def rr_boxplot(df):
+    
+    n = 1
+    plt.figure()
+    plt.vlines(1, 0, len(df))
+    for idx, row in df.iterrows():
+        plt.errorbar(row['rr'], idx+n, xerr=row['std'])
+        plt.scatter(row['rr'], idx+n)
+    lbls = [' ']
+    lbls.extend(list(df['lbl']))
+    plt.yticks(np.arange(len(df)+1, step=n), lbls)
+    return plt
+
+
 def param_boxplot(metric_var, agg_col, fig=plt.figure()):
     '''
 

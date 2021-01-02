@@ -42,7 +42,7 @@ df_match_id_count = df_match_id_count.merge(pd_confirm[['confirm_idc', 'mi_match
 df_match_id_count = df_match_id_count.groupby(['mi_match_id'], as_index=False).agg('count')
 df_match_id_count = df_match_id_count.loc[df_match_id_count['confirm_idc'] == 2]
 df_match_confirm = pd_confirm['confirm_idc'].loc[pd_confirm['mi_match_id'].isin(df_match_id_count['mi_match_id'])]
-pd_mmar = pd_mmar.loc[pd_mmar['confirm_idc'].isin(df_match_confirm)]
+# pd_mmar = pd_mmar.loc[pd_mmar['confirm_idc'].isin(df_match_confirm)]
 
 # In[ ] CONFIRM DATA - LESION DATA - ADD HRP/LRP MMAR
 # pd_mmar['mmar_hrp'].loc[pd_mmar['is_hrp']] = pd_mmar['mass_mcp_perc']

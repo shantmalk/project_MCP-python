@@ -13,6 +13,22 @@ from plotly.offline import plot
 from plotly.express import bar
 from scipy.stats import entropy
 import pyodbc
+from zepid import RiskRatio
+from scipy.stats import norm
+
+
+def relative_risk(df:'pd.DataFrame', exposure:'str', outcome:'str'):
+    
+    rr = RiskRatio()
+    rr.fit(df, exposure=exposure, outcome=outcome)
+    est= rr.results['RiskRatio'][1]
+    std = rr.results['SD(RR)'][1]
+    
+    # calculating p-value
+    z_score = np.log(est)/std
+    p_val = norm.sf(abs(z_score))*2
+    
+    return [exposure, est, std, p_val]
 
 # DEFINE FUNCTION: mmar_agg
 def mmar_agg_per_vessel(df:'pd.DataFrame', agg_func:'str', tag='', mmar_col='mass_mcp_perc') -> 'pd.Dataframe':
