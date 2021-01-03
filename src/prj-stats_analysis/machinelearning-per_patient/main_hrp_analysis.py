@@ -369,9 +369,13 @@ viz.table_basic(df_odds_ratio)
 
 # In[ ] AUC Analysis
 from sklearn.linear_model import LogisticRegression
-
-X = df['mmar_all_mean_hrp']
+from sklearn.metrics import precision_score
+xx = df['mmar_all_mean_hrp']
+X = df['mmar_mean_cutoff_hrp']
 y = df['mi_event']
-clf = LogisticRegression(solver="liblinear", random_state=0).fit(X, y)
-roc_auc_score(y, clf.predict_proba(X)[:, 1])
-roc_auc_score(y, clf.decision_function(X))
+
+# print(roc_auc_score(y, X))
+# print(roc_auc_score(df['mi_event'], df['mmar_all_mean_hrp']))
+
+print(precision_score(y, X, average='macro'))
+

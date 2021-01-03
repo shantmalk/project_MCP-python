@@ -6,11 +6,11 @@ import lib_prj
 from plotly.offline import plot
 import numpy as np
 
-# dir_main = 'C:/Users/smalk/Desktop/research/prj-mcp'
-# path_db = dir_main + '/data/database/db_CONFIRM-merged.accdb'
+dir_main = 'C:/Users/smalk/Desktop/research/prj-mcp'
+path_db = dir_main + '/data/database/db_CONFIRM-merged.accdb'
 
-dir_main = 'C:/Users/smalk/OneDrive/Desktop/python-dev/prj-mcp-analysis'
-path_db = dir_main + '/data/db_CONFIRM-merged.accdb'
+# dir_main = 'C:/Users/smalk/OneDrive/Desktop/python-dev/prj-mcp-analysis'
+# path_db = dir_main + '/data/db_CONFIRM-merged.accdb'
 
 
 # In[ ] CONFIRM DATA - LOAD DATA
