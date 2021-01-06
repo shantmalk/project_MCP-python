@@ -16,10 +16,13 @@ import numpy as np
 import pandas as pd
 import six
 
+import seaborn as sns
+
 # For ROC
 from itertools import cycle
 from sklearn.metrics import roc_curve, auc
 from matplotlib import cm
+from functools import reduce
 
 # For survival curve
 from lifelines import KaplanMeierFitter
@@ -28,7 +31,29 @@ from lifelines import CoxPHFitter
 from lifelines.statistics import logrank_test
 
 # TABLES
-def table_basic(pd_data, fpath='tmp.png', row_colors=['#f1f1f2', 'w'], col_labels = [ ], **kwargs):
+
+def table_mmar_confirm(df, index, ax=None):
+    
+    def _tb_helper(_df, _index, _afunc, _col_lbl):
+        df_out = pd.pivot_table(_df, index=_index, aggfunc=_afunc)
+        df_out.columns = [x + _col_lbl for x in df_out.columns]
+        df_out.reset_index(inplace=True)
+        return df_out
+    
+    df_totals = _tb_helper(df, index, len, '_n').rename(columns={'confirm_idc_n' : 'n'})
+    df_mean = _tb_helper(df, index, 'mean', '_mean')
+    df_std = _tb_helper(df, index, np.std, '_std')
+    
+    df_agg_list = [df_totals, df_mean, df_std]
+        # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
+    df_agg_pivot = reduce(lambda left,right: pd.merge(left, right, on=index,how='outer',), df_agg_list) 
+    
+    incld_cols = index
+    incld_cols.extend(['n', 'mmar_mean', 'mmar_std'])
+    df_agg_pivot = df_agg_pivot[incld_cols]
+    table_basic(df_agg_pivot.sort_values(by=index), '', ['w', '#f1f1f2', '#f1f1f2', 'w',], ax=ax)
+
+def table_basic(pd_data, fpath='tmp.png', row_colors=['#f1f1f2', 'w'], col_labels = [ ], ax=None, **kwargs):
     '''
     
 
@@ -52,10 +77,12 @@ def table_basic(pd_data, fpath='tmp.png', row_colors=['#f1f1f2', 'w'], col_label
     pd_data = table_merge_mean_std(pd_data)
     if len(col_labels):
         pd_data.columns = col_labels
-    ax = render_mpl_table(pd_data, header_columns=0, col_width=3.0, row_colors=row_colors)
+    ax = render_mpl_table(pd_data, header_columns=0, col_width=3.0, row_colors=row_colors, ax=ax)
+    ax.get_xaxis().set_visible(False)
+    ax.get_yaxis().set_visible(False)
     plt.savefig(fpath)
 
-def table_pvalues(pd_data_dict, fpath, row_colors=['#f1f1f2', 'w'], **kwargs):
+def table_pvalues(pd_data_dict, fpath, row_colors=['#f1f1f2', 'w'], ax=None, **kwargs):
     '''
     
 
@@ -77,7 +104,7 @@ def table_pvalues(pd_data_dict, fpath, row_colors=['#f1f1f2', 'w'], **kwargs):
     
     # SETUP AXIS:
     pd_data = pd_data.round(2) 
-    ax = render_mpl_table(pd_data, header_columns=0, col_width=3.0, row_colors=row_colors)
+    ax = render_mpl_table(pd_data, header_columns=0, col_width=3.0, row_colors=row_colors, ax=ax)
     plt.savefig(fpath)
 
 def _combine_anova_dict(pd_data_dict):
@@ -189,6 +216,44 @@ def table_merge_mean_std(pd_data):
 
 
 # GRAPHS
+def swarmplot(args):
+
+    default_params = {
+            'whis' : np.inf,
+            'linewidth' : 3,
+            }
+    cur_ax = sns.boxplot(**{**args, **default_params})
+    
+    default_params = {
+            'dodge' : True,
+            'edgecolor' : 'white',
+            'linewidth' : 1.0,
+            'alpha' : .5,
+            's' : 10,
+            }
+    cur_ax = sns.stripplot(**{**args, **default_params})
+    return cur_ax
+    
+def kmsurvival_mmar_confirm(df:'pd.DataFrame', outcome_event:str, outcome_time:str, mmar_col:str, ax=None, q_cutoff=.85):
+    
+    if not ax:
+        fig = plt.figure()
+        ax = fig.add_axes()
+        
+    cutoff_thresh = df[mmar_col].quantile([q_cutoff])[q_cutoff]
+    df_dummy = pd.DataFrame()
+    df_dummy['outcome_event'] = df[outcome_event]
+    df_dummy['outcome_time'] = df[outcome_time]
+    df_dummy['mmar'] = df[mmar_col] > cutoff_thresh
+    
+    kmf = KaplanMeierFitter()
+    i1 = df_dummy['mmar'] == True
+    i2 = df_dummy['mmar'] == False
+    kmf.fit(durations = df_dummy['outcome_time'][i1], event_observed = df_dummy['outcome_event'][i1], label = 'MMAR_HRP > {CUTOFF:0.2f}'.format(CUTOFF=cutoff_thresh))
+    kmf.plot(ax=ax)
+    kmf.fit(df_dummy['outcome_time'][i2], df_dummy['outcome_event'][i2], label = 'MMAR_HRP < {CUTOFF:0.2f}'.format(CUTOFF=cutoff_thresh))
+    kmf.plot(ax=ax)
+
 def rr_boxplot(df):
     
     n = 1
@@ -234,7 +299,7 @@ def param_boxplot(metric_var, agg_col, fig=plt.figure()):
     plt.figure()
     sns.boxplot(x='mass_mcp_g', y=mmar_var_col, data=df_mmar)
 
-def roc_plot(pd_data, outcome_var, predictor_dict):
+def roc_plot(pd_data, outcome_var, predictor_dict, cur_ax=False):
     '''
     
 
@@ -276,26 +341,28 @@ def roc_plot(pd_data, outcome_var, predictor_dict):
         roc_tbls[p_var]['predictor_var'] = p_var
     
     # VISUALIZE
-    plt.figure()
+    if not cur_ax:
+        fig, cur_ax = plt.figure()
     lw = 2
         
     viridis = cm.get_cmap('Paired', len(predictor_vars))
     colors = viridis(range(len(predictor_vars)))
     for p_var, color in zip(predictor_vars, colors):
-        plt.plot(roc_tbls[p_var]['fpr'], roc_tbls[p_var]['tpr'], color=color,
-                 lw=lw, label='{PRED_VAR} (area = {AUC:0.2f})'.format(PRED_VAR=predictor_dict[p_var], AUC=roc_tbls[p_var]['auc'][0]))
-    plt.plot([-0.01, 1.01], [-0.01, 1.01], color='navy', lw=lw, linestyle='--')
-    plt.xlim([-0.01, 1.01])
-    plt.ylim([-0.01, 1.01])
-    plt.xlabel('1 - Specificity')
-    plt.ylabel('Sensitivity')
-    plt.legend(loc="lower right")
+        cur_ax.plot(roc_tbls[p_var]['fpr'], roc_tbls[p_var]['tpr'], color=color,
+                 lw=lw, label='{PRED_VAR} (area = {AUC:0.2f})'.format(PRED_VAR=predictor_dict[p_var], AUC=roc_tbls[p_var]['auc'][0]),
+                 )
+    cur_ax.plot([-0.01, 1.01], [-0.01, 1.01], color='navy', lw=lw, linestyle='--')
+    cur_ax.set_xlim([-0.01, 1.01])
+    cur_ax.set_ylim([-0.01, 1.01])
+    cur_ax.set_xlabel('1 - Specificity')
+    cur_ax.set_ylabel('Sensitivity')
+    cur_ax.legend(loc="lower right")
     
     # COMBINE ROC_TBLS INTO ONE ARRAY
     roc_pd = pd.DataFrame()
     for p_var in predictor_vars:
         roc_pd = pd.concat([roc_pd, roc_tbls[p_var]])
-    return plt, roc_pd
+    return cur_ax, roc_pd
 
 def survival_curve(pd_qsel_data, outcome_var, outcome_time, predictor_class, labels):
     '''

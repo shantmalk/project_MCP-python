@@ -29,6 +29,7 @@ outcome = 'macelr_event_confirm'
 
 df = raw_data.PD_COMBINED
 df_lesion = raw_data.PD_LESION
+df = df.loc[df['mi_event'] == 1]
 
 # In[3] ROC-AUC ANALYSIS - USING HRP MMAR ONLY
 outcome = 'macelr_event_confirm'
@@ -46,7 +47,8 @@ fig.title(figure_label)
 
 # In[3] DESCRIPTIVE ANALYSIS - USING ALL DATA
 vessel = 'all'
-outcome = 'mi_event'
+df['mi_stemi'] = df['mi_type'] == 2
+outcome = 'mi_stemi'
 figure_label = 'Per-Patient:  High-risk plaque features [Outcome = ' + outcome + ']' + ' VESSEL: ' + vessel
 labels = {'mmar_' + vessel + '_max' : 'MMAR<MAX>',
           'mmar_' + vessel + '_mean' : 'MMAR<MEAN>',
@@ -89,7 +91,7 @@ mmar_total = raw_data.pd_mmar_mean[['confirm_idc', 'mmar_all', 'mmar_agg_type']]
 mmar_total['plaque_type'] = 'all'
 
 df_descriptive = pd.concat([mmar_hrp, mmar_lrp, mmar_total])
-df_descriptive = df_descriptive.merge(df[['confirm_idc', 'mi_event', 'mi_time']], how='left', on='confirm_idc')
+df_descriptive = df_descriptive.merge(df[['confirm_idc', outcome, 'mi_time']], how='left', on='confirm_idc')
 
 title='Per-Patient: MMAR<sub>MEAN</sub> based on plaque type'
 fname = 'per_patient_mmar_mean_plaquetype'
@@ -114,7 +116,7 @@ mmar_all = raw_data.pd_mmar_sum[['confirm_idc', 'mmar_all', 'mmar_agg_type']].re
 mmar_all['plaque_type'] = 'all'
 
 df_descriptive = pd.concat([mmar_hrp, mmar_lrp, mmar_all])
-df_descriptive = df_descriptive.merge(df[['confirm_idc', 'mi_event', 'mi_time']], how='left', on='confirm_idc')
+df_descriptive = df_descriptive.merge(df[['confirm_idc', outcome, 'mi_time']], how='left', on='confirm_idc')
 
 title='Per-Patient: MMAR<sub>SUM</sub> based on plaque type'
 fname = 'per_patient_mmar_sum_plaquetype'
@@ -139,7 +141,7 @@ mmar_all = raw_data.pd_mmar_max[['confirm_idc', 'mmar_all', 'mmar_agg_type']].re
 mmar_all['plaque_type'] = 'all'
 
 df_descriptive = pd.concat([mmar_hrp, mmar_lrp, mmar_all])
-df_descriptive = df_descriptive.merge(df[['confirm_idc', 'mi_event', 'mi_time']], how='left', on='confirm_idc')
+df_descriptive = df_descriptive.merge(df[['confirm_idc', outcome, 'mi_time']], how='left', on='confirm_idc')
 
 title='Per-Patient: MMAR<sub>MAX</sub> based on plaque type'
 fname = 'per_patient_mmar_max_plaquetype'
@@ -164,7 +166,7 @@ mmar_all = raw_data.pd_mmar_min[['confirm_idc', 'mmar_all', 'mmar_agg_type']].re
 mmar_all['plaque_type'] = 'all'
 
 df_descriptive = pd.concat([mmar_hrp, mmar_lrp, mmar_all])
-df_descriptive = df_descriptive.merge(df[['confirm_idc', 'mi_event', 'mi_time']], how='left', on='confirm_idc')
+df_descriptive = df_descriptive.merge(df[['confirm_idc', outcome, 'mi_time']], how='left', on='confirm_idc')
 
 title='Per-Patient: MMAR<sub>MIN</sub> based on plaque type'
 fname = 'per_patient_mmar_min_plaquetype'
@@ -215,7 +217,7 @@ cutoff_thresh_sum = 15
 print('========= HRP LESIONS =========')
 plt.figure() 
 df_dummy = pd.DataFrame()
-df_dummy['outcome_event'] = df['mi_event']
+df_dummy['outcome_event'] = df[outcome]
 df_dummy['outcome_time'] = df['mi_time']
 df_dummy['mmar'] = df['mmar_all_mean_hrp']
 df_dummy['hrp'] = df['mmar_all_n_hrp'].fillna(0)
@@ -270,7 +272,7 @@ cutoff_thresh_sum = df['mmar_all_sum_hrp'].quantile([q_cutoff])[q_cutoff]
 print('========= HRP LESIONS =========')
 plt.figure() 
 df_dummy = pd.DataFrame()
-df_dummy['outcome_event'] = df['mi_event']
+df_dummy['outcome_event'] = df[outcome]
 df_dummy['outcome_time'] = df['mi_time']
 df_dummy['mmar_hrp_cutoff'] = df['mmar_all_max_hrp'] > cutoff_thresh_max
 
@@ -301,7 +303,7 @@ df['mmar_sum_cutoff'] = df['mmar_all_sum_hrp'] > cutoff_thresh_sum
 df['mmar_max_cutoff'] = df['mmar_all_max_hrp'] > cutoff_thresh_max
 
 rr = RiskRatio()
-rr.fit(df, exposure=exp, outcome='mi_event')
+rr.fit(df, exposure=exp, outcome=outcome)
 
 # calculating p-value
 est= rr.results['RiskRatio'][1]
@@ -370,9 +372,10 @@ viz.table_basic(df_odds_ratio)
 # In[ ] AUC Analysis
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import precision_score
-xx = df['mmar_all_mean_hrp']
-X = df['mmar_mean_cutoff_hrp']
-y = df['mi_event']
+xx = df['mmar_all_mean_hrp'] / df['mmar_all_mean'] * 100
+xx = xx.fillna(0)
+X = xx > xx.quantile([q_cutoff])[q_cutoff]
+y = df[outcome]
 
 # print(roc_auc_score(y, X))
 # print(roc_auc_score(df['mi_event'], df['mmar_all_mean_hrp']))
