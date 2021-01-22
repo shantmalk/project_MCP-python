@@ -27,9 +27,14 @@ pd_iconic = lib_prj.process.db_query(path_db, qsel_iconic)
 pd_confirm = pd_confirm.merge(pd_iconic[['mi_type', 'confirm_idc']], how='left', on='confirm_idc')
 
 # In[ ] CONFIRM DATA - LESION DATA - DEFINE CRITERIA FOR HIGH RISK PLAQUE
-pd_lesion['is_hrp'] = ((pd_lesion['pr'] + pd_lesion['sc'] + pd_lesion['lap']) > 1) & (pd_lesion['lumenareastenosis'] > 50)
-# pd_lesion['is_hrp'] = ((pd_lesion['pr'] + pd_lesion['sc'] + pd_lesion['lap']) > 1)
+# pd_lesion['is_hrp'] = ((pd_lesion['pr'] + pd_lesion['sc'] + pd_lesion['lap']) > 1) & (pd_lesion['lumenareastenosis'] > 50)
+pd_lesion['is_hrp'] = ((pd_lesion['pr'] + pd_lesion['sc'] + pd_lesion['lap']) > 1)
+# pd_lesion['is_hrp'] = pd_lesion['lesion_worst'] & pd_lesion['mldlesion_epicardial']
+# pd_lesion['is_hrp'] = pd_lesion['lesion_worst']
+
+pd_lesion['is_hrp'] = pd_lesion['is_hrp'].astype('int16')
 pd_lesion['is_lrp'] = np.where(pd_lesion['is_hrp'], 0, 1)
+pd_lesion['is_lrp'] = pd_lesion['is_lrp'].astype('int16')
 
 pd_lesion['is_hrp_lad'] = np.where(pd_lesion['is_hrp'] & (pd_lesion['mldlesion_arterial_dist'] == 'lad'), 1, 0)
 pd_lesion['is_lrp_lad'] = np.where(pd_lesion['is_lrp'] & (pd_lesion['mldlesion_arterial_dist'] == 'lad'), 1, 0)
@@ -49,19 +54,32 @@ pd_confirm['fram_risk_confirm'] = pd_confirm['fram_risk_confirm'].fillna(pd_conf
 # pd_confirm['mi_event'] = pd_confirm['mi_event'] & (pd_confirm['mi_time'] <= 365)
 # pd_confirm = pd_confirm.loc[(pd_confirm['mi_event'] & (pd_confirm['mi_time'] <= 365 * 1)) | (pd_confirm['mi_event'] == 0)]
 
-pd_confirm = pd_confirm.loc[pd_confirm['mi_event'] == 1]
+# pd_confirm = pd_confirm.loc[pd_confirm['mi_event'] == 1]
 
-pd_confirm['mi_event'] = (pd_confirm['mi_type'] == 1) | (pd_confirm['mi_type'] == 2)
+# pd_confirm['mi_event'] = (pd_confirm['mi_type'] == 1) | (pd_confirm['mi_type'] == 2)
 
 # In[ ] MMAR DATA - LOAD DATA
 qsel_mmar = "SELECT tblMCP.id_patient, tblMCP.id_vessel_study, tblMCP.mass_mcp_perc, tblMCP.id_main_vessel FROM tblMCP WHERE (((tblMCP.id_vessel) Like '%dist%'));"
 pd_mmar = lib_prj.process.db_query(path_db, qsel_mmar)
 pd_mmar = pd_mmar.reset_index().rename(columns={'id_patient' : 'confirm_idc', 'id_vessel_study' : 'lesion_id'})
-pd_mmar = pd_mmar.merge(pd_lesion[['lesion_id', 'is_lrp', 'is_hrp', 'is_hrp_lad', 'is_lrp_lad', 'is_hrp_lcx', 'is_lrp_lcx', 'is_hrp_rca', 'is_lrp_rca', 'lumenareastenosis', 'plaquevolume_lesion', 'lesion_length', 'lumenvolume_lesion',]], how='left', on='lesion_id')
+pd_mmar = pd_mmar.merge(pd_lesion[['lesion_id', 'mldlesion_arterial_dist', 'is_lrp', 'is_hrp', 'is_hrp_lad', 'is_lrp_lad', 'is_hrp_lcx', 'is_lrp_lcx', 'is_hrp_rca', 'is_lrp_rca', 'lumenareastenosis', 'plaquevolume_lesion', 'lesion_length', 'lumenvolume_lesion','lumenminimaldiameter']], how='left', on='lesion_id')
 # pd_mmar['mass_mcp_perc'] = pd_mmar['mass_mcp_perc'] * \
 #                             (pd_mmar['plaquevolume_lesion'] * pd_mmar['lesion_length'] * pd_mmar['lumenareastenosis']) / \
 #                             (pd_mmar['lumenvolume_lesion'])
 
+pd_mmar['is_hrp'] = pd_mmar['is_hrp'] & (pd_mmar['mass_mcp_perc'] > 12.5)
+pd_mmar['is_hrp'] = pd_mmar['is_hrp'].astype('int16')
+pd_mmar['is_lrp'] = np.where(pd_mmar['is_hrp'], 0, 1)
+pd_mmar['is_lrp'] = pd_mmar['is_lrp'].astype('int16')
+
+pd_mmar['is_hrp_lad'] = np.where(pd_mmar['is_hrp'] & (pd_mmar['mldlesion_arterial_dist'] == 'lad'), 1, 0)
+pd_mmar['is_lrp_lad'] = np.where(pd_mmar['is_lrp'] & (pd_mmar['mldlesion_arterial_dist'] == 'lad'), 1, 0)
+
+pd_mmar['is_hrp_lcx'] = np.where(pd_mmar['is_hrp'] & (pd_mmar['mldlesion_arterial_dist'] == 'lcx'), 1, 0)
+pd_mmar['is_lrp_lcx'] = np.where(pd_mmar['is_lrp'] & (pd_mmar['mldlesion_arterial_dist'] == 'lcx'), 1, 0)
+
+pd_mmar['is_hrp_rca'] = np.where(pd_mmar['is_hrp'] & (pd_mmar['mldlesion_arterial_dist'] == 'rca'), 1, 0)
+pd_mmar['is_lrp_rca'] = np.where(pd_mmar['is_lrp'] & (pd_mmar['mldlesion_arterial_dist'] == 'rca'), 1, 0)
 
 # In[ ] CONFIRM - FILTER FOR MATCHED CASES FOR CASE-CONTROL SETUP
 df_match_id_count = pd.DataFrame()
@@ -74,6 +92,7 @@ df_match_confirm = pd_confirm['confirm_idc'].loc[pd_confirm['mi_match_id'].isin(
 # pd_mmar = pd_mmar.loc[pd_mmar['confirm_idc'].isin(df_match_confirm)] # TOGGLE TO FILTER FOR CASE-CONTROLLED PATIENTS
 
 # In[ ] CONFIRM DATA - LESION DATA - ADD HRP/LRP MMAR
+pd_mmar['mass_mcp_perc'] =  pd_mmar['mass_mcp_perc']
 pd_mmar['mmar_hrp'] = np.where(pd_mmar['is_hrp'], pd_mmar['mass_mcp_perc'], 0)
 pd_mmar['mmar_lrp'] = np.where(~(pd_mmar['is_hrp']), pd_mmar['mass_mcp_perc'], 0)
 

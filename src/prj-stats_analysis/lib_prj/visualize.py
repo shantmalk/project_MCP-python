@@ -32,7 +32,7 @@ from lifelines.statistics import logrank_test
 
 # TABLES
 
-def table_mmar_confirm(df, index, ax=None):
+def table_mmar_confirm(df, index, ax=None, lbls=[]):
     
     def _tb_helper(_df, _index, _afunc, _col_lbl):
         df_out = pd.pivot_table(_df, index=_index, aggfunc=_afunc)
@@ -48,10 +48,31 @@ def table_mmar_confirm(df, index, ax=None):
         # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
     df_agg_pivot = reduce(lambda left,right: pd.merge(left, right, on=index,how='outer',), df_agg_list) 
     
-    incld_cols = index
+    incld_cols = index.copy()
     incld_cols.extend(['n', 'mmar_mean', 'mmar_std'])
     df_agg_pivot = df_agg_pivot[incld_cols]
-    table_basic(df_agg_pivot.sort_values(by=index), '', ['w', '#f1f1f2', '#f1f1f2', 'w',], ax=ax)
+    table_basic(df_agg_pivot.sort_values(by=index), '', ['w', '#f1f1f2', '#f1f1f2', 'w',], col_labels = lbls, ax=ax)
+
+def table_lesion_confirm(df, index, ax=None, lbls={}):
+    
+    def _tb_helper(_df, _index, _afunc, _col_lbl):
+        df_out = pd.pivot_table(_df, index=_index, aggfunc=_afunc)
+        df_out.columns = [x + _col_lbl for x in df_out.columns]
+        df_out.reset_index(inplace=True)
+        return df_out
+    
+    df_totals = _tb_helper(df, index, len, '_n').rename(columns={'confirm_idc_n' : 'n'})
+    df_count = _tb_helper(df, index, 'sum', '_mean')
+    df_std = _tb_helper(df, index, np.std, '_std')
+    
+    df_agg_list = [df_totals, df_count, df_std]
+        # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
+    df_agg_pivot = reduce(lambda left,right: pd.merge(left, right, on=index,how='outer',), df_agg_list) 
+    
+    incld_cols = index.copy()
+    incld_cols.extend(['n', 'mmar_mean'])
+    df_agg_pivot = df_agg_pivot[incld_cols].rename(columns={'mmar_mean' : 'n_lesions'})
+    table_basic(df_agg_pivot.sort_values(by=index), '', ['w', '#f1f1f2', '#f1f1f2', 'w',], col_labels = lbls, ax=ax)
 
 def table_basic(pd_data, fpath='tmp.png', row_colors=['#f1f1f2', 'w'], col_labels = [ ], ax=None, **kwargs):
     '''
@@ -216,6 +237,45 @@ def table_merge_mean_std(pd_data):
 
 
 # GRAPHS
+def kdeplot(args):
+    sns.set_style("darkgrid")
+    
+    default_params = {
+        # 'norm' : True,
+        }
+    # cur_ax = sns.histplot(**{**args, **default_params})
+    
+    default_params = {
+        'cut' : 0,
+        'fill' : True,
+        'alpha' : .5,
+        'linewidth' : 2,
+        }
+    cur_ax = sns.kdeplot(**{**args, **default_params})
+    # cur_ax.set_xlim(left=0)
+    # start, end = cur_ax.get_xlim()
+    # cur_ax.xaxis.set_ticks(np.arange(start, end, 1))
+    return cur_ax
+
+def histplot(args):
+    default_params = {
+        'dodge' : True,
+        }
+    
+    cur_ax = sns.countplot(**{**args, **default_params})
+    
+    # default_params = {
+    #     'cut' : 0,
+    #     'fill' : True,
+    #     'alpha' : .5,
+    #     'linewidth' : 0,
+    #     }
+    # cur_ax = sns.kdeplot(**{**args, **default_params})
+    # cur_ax.set_xlim(left=0)
+    # start, end = cur_ax.get_xlim()
+    # cur_ax.xaxis.set_ticks(np.arange(start, end, 1))
+    return cur_ax
+
 def swarmplot(args):
 
     default_params = {
@@ -234,7 +294,7 @@ def swarmplot(args):
     cur_ax = sns.stripplot(**{**args, **default_params})
     return cur_ax
     
-def kmsurvival_mmar_confirm(df:'pd.DataFrame', outcome_event:str, outcome_time:str, mmar_col:str, ax=None, q_cutoff=.85):
+def kmsurvival_mmar_confirm(df:'pd.DataFrame', outcome_event:str, outcome_time:str, mmar_col:str, ax=None, q_cutoff=.85, lbl='{CUTOFF:0.2f}'):
     
     if not ax:
         fig = plt.figure()
@@ -249,9 +309,9 @@ def kmsurvival_mmar_confirm(df:'pd.DataFrame', outcome_event:str, outcome_time:s
     kmf = KaplanMeierFitter()
     i1 = df_dummy['mmar'] == True
     i2 = df_dummy['mmar'] == False
-    kmf.fit(durations = df_dummy['outcome_time'][i1], event_observed = df_dummy['outcome_event'][i1], label = 'MMAR_HRP > {CUTOFF:0.2f}'.format(CUTOFF=cutoff_thresh))
+    kmf.fit(durations = df_dummy['outcome_time'][i1], event_observed = df_dummy['outcome_event'][i1], label = lbl.format(CUTOFF=cutoff_thresh))
     kmf.plot(ax=ax)
-    kmf.fit(df_dummy['outcome_time'][i2], df_dummy['outcome_event'][i2], label = 'MMAR_HRP < {CUTOFF:0.2f}'.format(CUTOFF=cutoff_thresh))
+    kmf.fit(df_dummy['outcome_time'][i2], df_dummy['outcome_event'][i2], label = lbl.replace(' > ',' < ').format(CUTOFF=cutoff_thresh))
     kmf.plot(ax=ax)
 
 def rr_boxplot(df):
@@ -268,36 +328,36 @@ def rr_boxplot(df):
     return plt
 
 
-def param_boxplot(metric_var, agg_col, fig=plt.figure()):
-    '''
+# def param_boxplot(metric_var, agg_col, fig=plt.figure()):
+#     '''
 
 
-    Parameters
-    ----------
-    metric_var : STRING
-        "Metric" variable.
-    agg_col : STRING
-        "Aggregate" column name.
-    fig : plt.Figure(), optional
-        If no figure specified, create one. The default is plt.figure().
+#     Parameters
+#     ----------
+#     metric_var : STRING
+#         "Metric" variable.
+#     agg_col : STRING
+#         "Aggregate" column name.
+#     fig : plt.Figure(), optional
+#         If no figure specified, create one. The default is plt.figure().
 
-    Returns
-    -------
-    None.
+#     Returns
+#     -------
+#     None.
 
-    '''
+#     '''
 
-    pd_dict = lib_prj.process.mk_pd_dict(pd_data, metric_var, {'mmar_max' : 'max',
-                                                               'mmar_min' : 'min',
-                                                               })    
+#     pd_dict = lib_prj.process.mk_pd_dict(pd_data, metric_var, {'mmar_max' : 'max',
+#                                                                'mmar_min' : 'min',
+#                                                                })    
     
     
-    agg_dict = lib_prj.process.agg_dataframe_dict(agg_col, pd_dict)
-    df_dict = lib_prj.process.mk_pd_dict(df_mcp_comb, metric_var, {'mmar_max' : 'max', 'mmar_min' : 'min'})
-    df_mmar = lib_prj.process.agg_dataframe_dict(mmar_var_col, df_dict)
+#     agg_dict = lib_prj.process.agg_dataframe_dict(agg_col, pd_dict)
+#     df_dict = lib_prj.process.mk_pd_dict(df_mcp_comb, metric_var, {'mmar_max' : 'max', 'mmar_min' : 'min'})
+#     df_mmar = lib_prj.process.agg_dataframe_dict(mmar_var_col, df_dict)
 
-    plt.figure()
-    sns.boxplot(x='mass_mcp_g', y=mmar_var_col, data=df_mmar)
+#     plt.figure()
+#     sns.boxplot(x='mass_mcp_g', y=mmar_var_col, data=df_mmar)
 
 def roc_plot(pd_data, outcome_var, predictor_dict, cur_ax=False):
     '''

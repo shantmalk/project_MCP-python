@@ -103,6 +103,37 @@ def mmar_agg_per_patient(df:'pd.DataFrame', agg_func:'str', tag='', mmar_col='ma
     df_agg['mmar_agg_type'] = agg_func
     return df_agg.reset_index()
 
+# DEFINE FUNCTION: mmar_agg
+def count_lesion_per_patient(df:'pd.DataFrame', criteria=True, tag='', criteria_col='is_hrp') -> 'pd.Dataframe':
+    """
+    mmar_agg_per_vessel aggregates myocardial mass at-risk (MMAR) per-patient.  Function is specifically used to process CONFIRM per-lesion data with MMAR.  The inputted df is outputted with the addition of aggregate columns.
+
+    Parameters
+    ----------
+    df : 'pd.DataFrame'
+        DataFrame of CONFIRM per-lesion data with associated MMAR.
+    agg_func : STR
+        Name of aggregate function to use (ex. max/min/mean/sum/count).
+    tag : STR, optional
+        Column tag to append to new aggregate columns. The default is ''.
+    mmar_col : STR, optional
+        Column containing MMAR data to aggregate. The default is 'mass_mcp_perc'.
+        
+    Returns
+    -------
+    pd.DataFrame
+        Return a new DataFrame with aggregate column.  Returned DataFrame will have 1 new column for aggregated MMAR data.  Each row will have aggregated MMAR based on specified agg_func, for each patient.
+
+    """
+    
+    include_cols = ['confirm_idc', criteria_col]
+    df[criteria_col] = (df[criteria_col] == criteria).astype(int)
+    df_agg = df[include_cols].groupby(['confirm_idc'], as_index=False).agg('sum')
+    df_agg = df_agg.rename(columns={criteria_col : 'mmar_all' + tag}).fillna(0)
+    df_agg['mmar_all' + tag] = df_agg['mmar_all' + tag].astype(np.float64)
+    df_agg['mmar_agg_type'] = 'count'
+    return df_agg.reset_index()
+
 # DEFINE FUNCTION:  clean_cols
 def clean_cols(df:'pd.DataFrame') -> 'pd.DateFrame':
     """clean_cols runs a few functions to clean data in specified pandas DataFrame

@@ -16,7 +16,6 @@ def json_parse(path_qsel_json, kname):
 
 def qsel_parse(path_db, path_qsel_json, kname):
     qsel = json_parse(path_qsel_json, kname)['qsel']
-    
     path_db_frmt = r'Driver={{Microsoft Access Driver (*.mdb, *.accdb)}};DBQ={PATH};'.format(PATH=path_db)
     conn = pyodbc.connect(path_db_frmt)
     return pd.read_sql_query(qsel, conn)
