@@ -87,9 +87,18 @@ df_match_id_count['confirm_idc'] = pd_mmar.confirm_idc.unique()
 df_match_id_count = df_match_id_count.merge(pd_confirm[['confirm_idc', 'mi_match_id']], how='left', on='confirm_idc')
 df_match_id_count = df_match_id_count.groupby(['mi_match_id'], as_index=False).agg('count')
 df_match_id_count = df_match_id_count.loc[df_match_id_count['confirm_idc'] == 2]
-df_match_confirm = pd_confirm['confirm_idc'].loc[pd_confirm['mi_match_id'].isin(df_match_id_count['mi_match_id'])]
 
-# pd_mmar = pd_mmar.loc[pd_mmar['confirm_idc'].isin(df_match_confirm)] # TOGGLE TO FILTER FOR CASE-CONTROLLED PATIENTS
+# FILTER FOR GRANT:
+# df_match_id_count = df_match_id_count[:15]
+
+df_match_confirm = pd_confirm['confirm_idc'].loc[pd_confirm['mi_match_id'].isin(df_match_id_count['mi_match_id'])]
+df_match_tmp = pd.DataFrame()
+df_match_tmp['confirm_idc'] = df_match_confirm
+df_match_tmp = df_match_tmp.merge(pd_confirm[['confirm_idc', 'mi_event']], how='left', on='confirm_idc')
+
+
+
+pd_mmar = pd_mmar.loc[pd_mmar['confirm_idc'].isin(df_match_confirm)] # TOGGLE TO FILTER FOR CASE-CONTROLLED PATIENTS
 
 # In[ ] CONFIRM DATA - LESION DATA - ADD HRP/LRP MMAR
 pd_mmar['mass_mcp_perc'] =  pd_mmar['mass_mcp_perc']

@@ -26,10 +26,11 @@ def mk_df_agg(df_module, df:'pd.DataFrame', agg_func, col_include=[]):
     mmar_hrp['plaque_type'] = 'hrp'
     mmar_lrp = getattr(df_module, pd_agg_tmplt.format(FUNC=agg_func, PTYPE='_lrp'))[['confirm_idc', 'mmar_all_lrp', 'mmar_agg_type']].rename(columns={'mmar_all_lrp' : 'mmar'})
     mmar_lrp['plaque_type'] = 'lrp'
-    mmar_total = getattr(df_module, pd_agg_tmplt.format(FUNC=agg_func, PTYPE=''))[['confirm_idc', 'mmar_all', 'mmar_agg_type']].rename(columns={'mmar_all' : 'mmar'})
-    mmar_total['plaque_type'] = 'all'
+    # mmar_total = getattr(df_module, pd_agg_tmplt.format(FUNC=agg_func, PTYPE=''))[['confirm_idc', 'mmar_all', 'mmar_agg_type']].rename(columns={'mmar_all' : 'mmar'})
+    # mmar_total['plaque_type'] = 'all'
 
-    df_agg = pd.concat([mmar_hrp, mmar_lrp, mmar_total])
+    # df_agg = pd.concat([mmar_hrp, mmar_lrp, mmar_total])
+    df_agg =  pd.concat([mmar_hrp, mmar_lrp])
     df_agg = df_agg.merge(df[col_include], how='left', on='confirm_idc')
     return df_agg
 

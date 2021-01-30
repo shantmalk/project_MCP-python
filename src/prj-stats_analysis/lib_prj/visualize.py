@@ -39,6 +39,9 @@ def table_mmar_confirm(df, index, ax=None, lbls=[]):
         df_out.columns = [x + _col_lbl for x in df_out.columns]
         df_out.reset_index(inplace=True)
         return df_out
+    def _tb_add_pval(_df, _df_pval):
+        _df['pvalue'].loc[_df['plaque_type'] == _df_pval['group'][0]] = ['%0.2f' % _df_pval['p-value'][0], '']
+        return _df
     
     df_totals = _tb_helper(df, index, len, '_n').rename(columns={'confirm_idc_n' : 'n'})
     df_mean = _tb_helper(df, index, 'mean', '_mean')
@@ -51,7 +54,26 @@ def table_mmar_confirm(df, index, ax=None, lbls=[]):
     incld_cols = index.copy()
     incld_cols.extend(['n', 'mmar_mean', 'mmar_std'])
     df_agg_pivot = df_agg_pivot[incld_cols]
-    table_basic(df_agg_pivot.sort_values(by=index), '', ['w', '#f1f1f2', '#f1f1f2', 'w',], col_labels = lbls, ax=ax)
+    
+    df_agg_pivot['pvalue'] = ''
+    
+    # TODO: GENERALIZE THIS TO BE BASED ON ALL UNIQUE OCCURRENCES OF PLAQUE_TYPE
+    # df_pval_all = table_pval_confirm(df, index[1], 'mmar', 'plaque_type', 'all')
+    df_pval_hrp = table_pval_confirm(df, index[1], 'mmar', 'plaque_type', 'hrp')
+    df_pval_lrp = table_pval_confirm(df, index[1], 'mmar', 'plaque_type', 'lrp')
+    
+    
+    # df_agg_pivot = _tb_add_pval(df_agg_pivot, df_pval_all)
+    df_agg_pivot = _tb_add_pval(df_agg_pivot, df_pval_hrp)
+    df_agg_pivot = _tb_add_pval(df_agg_pivot, df_pval_lrp)
+
+    return table_basic(df_agg_pivot.sort_values(by=index), '', ['w', '#f1f1f2', '#f1f1f2', 'w',], col_labels = lbls, ax=ax)
+
+def table_pval_confirm(df, col_indpendent, col_var, col_lbl, col_lbl_cond):
+    col_independent_inv = 'inv_'
+    df[col_independent_inv] = ~(df[col_indpendent].astype('bool'))
+    # Add P-values
+    return _combine_anova_dict({col_lbl_cond : lib_prj.process.stats_anova(df.loc[df[col_lbl] == col_lbl_cond], [col_independent_inv, col_indpendent], col_var)})
 
 def table_lesion_confirm(df, index, ax=None, lbls={}):
     
@@ -102,6 +124,8 @@ def table_basic(pd_data, fpath='tmp.png', row_colors=['#f1f1f2', 'w'], col_label
     ax.get_xaxis().set_visible(False)
     ax.get_yaxis().set_visible(False)
     plt.savefig(fpath)
+    
+    return pd_data
 
 def table_pvalues(pd_data_dict, fpath, row_colors=['#f1f1f2', 'w'], ax=None, **kwargs):
     '''
@@ -222,6 +246,7 @@ def table_merge_mean_std(pd_data):
 
     '''
     pd_data_merged = pd_data
+    pd_data_merged = pd_data_merged.drop(columns=['pvalue']) 
     cols = list(filter(lambda x: (x.find('_std') > -1 or x.find('_mean') > -1), list(pd_data_merged.columns)))
     cols_cleaned = list(set(x.replace('_std','').replace('_mean','') for x in cols))
     cols_cleaned.sort()
@@ -232,11 +257,18 @@ def table_merge_mean_std(pd_data):
         col_mean = pd_data[col_lbl_mean].apply(str)
         col_std = pd_data[col_lbl_std].apply(str)
         pd_data_merged[cols_cleaned[ii]] = col_mean + ' ± ' + col_std
-    
+    pd_data_merged['pvalue'] = pd_data['pvalue']
     return pd_data_merged
 
 
 # GRAPHS
+def get_line_from_axis(axis):
+    for item in axis.get_children():
+        return item
+        # if isinstance(item, plt.lines.Line2D):
+            # return item
+
+
 def kdeplot(args):
     sns.set_style("darkgrid")
     
@@ -277,21 +309,27 @@ def histplot(args):
     return cur_ax
 
 def swarmplot(args):
-
+    args['data'][args['x']] = [x.upper() for x in args['data'][args['x']]]
     default_params = {
             'whis' : np.inf,
-            'linewidth' : 3,
+            'linewidth' : 5,
+            # 'height' : 4,
+            # 'aspect' : .7,
             }
     cur_ax = sns.boxplot(**{**args, **default_params})
+    # cur_ax.get_legend().remove()
     
     default_params = {
             'dodge' : True,
             'edgecolor' : 'white',
-            'linewidth' : 1.0,
+            'linewidth' : 3.0,
             'alpha' : .5,
-            's' : 10,
+            's' : 20, # CHANGE TO 10
+            # 'label' : {'1' : 'MI', '0' : 'No MI'},
             }
     cur_ax = sns.stripplot(**{**args, **default_params})
+    cur_ax.get_legend().remove()
+    
     return cur_ax
     
 def kmsurvival_mmar_confirm(df:'pd.DataFrame', outcome_event:str, outcome_time:str, mmar_col:str, ax=None, q_cutoff=.85, lbl='{CUTOFF:0.2f}'):
@@ -301,6 +339,7 @@ def kmsurvival_mmar_confirm(df:'pd.DataFrame', outcome_event:str, outcome_time:s
         ax = fig.add_axes()
         
     cutoff_thresh = df[mmar_col].quantile([q_cutoff])[q_cutoff]
+    cutoff_thresh = 10
     df_dummy = pd.DataFrame()
     df_dummy['outcome_event'] = df[outcome_event]
     df_dummy['outcome_time'] = df[outcome_time]
@@ -310,9 +349,11 @@ def kmsurvival_mmar_confirm(df:'pd.DataFrame', outcome_event:str, outcome_time:s
     i1 = df_dummy['mmar'] == True
     i2 = df_dummy['mmar'] == False
     kmf.fit(durations = df_dummy['outcome_time'][i1], event_observed = df_dummy['outcome_event'][i1], label = lbl.format(CUTOFF=cutoff_thresh))
-    kmf.plot(ax=ax)
+    # kmf.plot_survival_function(show_censors=True, censor_styles={'ms' : 6, 'marker' : 's', }, ax=ax)
+    kmf.plot(ax=ax, ci_show=False)
     kmf.fit(df_dummy['outcome_time'][i2], df_dummy['outcome_event'][i2], label = lbl.replace(' > ',' < ').format(CUTOFF=cutoff_thresh))
-    kmf.plot(ax=ax)
+    # kmf.plot_survival_function(show_censors=True, censor_styles={'ms' : 6, 'marker' : 's', }, ax=ax)
+    kmf.plot(ax=ax, ci_show=False)
 
 def rr_boxplot(df):
     
@@ -385,10 +426,11 @@ def roc_plot(pd_data, outcome_var, predictor_dict, cur_ax=False):
     tpr = dict()
     thresh = dict()
     roc_auc = dict()
-    # filt_pd_data = pd_data[~pd.isnull(pd_data[outcome_var])]
+    
     filt_pd_data = pd_data
     #filt_pd_data[outcome_var][pd.isnull(filt_pd_data[outcome_var])]
     for i in range(len(predictor_vars)):
+        # filt_pd_data = pd_data[~(pd_data[predictor_vars[i]] == 0)]
         fpr[i], tpr[i], thresh[i] = roc_curve(filt_pd_data[outcome_var], filt_pd_data[predictor_vars[i]]) # REMOVE == '1' IF NECESSARY FOR OTHER PROCESSING...
         roc_auc[i] = auc(fpr[i], tpr[i])
     

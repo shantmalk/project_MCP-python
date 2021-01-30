@@ -112,25 +112,25 @@ table_mmar_confirm(mk_df_agg(raw_data, df_main, 'sum', [OUTCOME_EVENT, OUTCOME_T
 from lifelines import KaplanMeierFitter
 from lib_prj.visualize import kmsurvival_mmar_confirm
 
-kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_mean', m_fig.add_subplot(gs[3,0]), .85, 'MMAR<ALL> > {CUTOFF:0.2f}')
-kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_max', m_fig.add_subplot(gs[3,1]), .85, 'MMAR<ALL> > {CUTOFF:0.2f}')
-kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_sum', m_fig.add_subplot(gs[3,2]), .85, 'MMAR<ALL> > {CUTOFF:0.2f}')
+kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_mean', m_fig.add_subplot(gs[3,0]), .85, '$MMAR_{{ALL}}$ > {CUTOFF:0.2f}')
+kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_max', m_fig.add_subplot(gs[3,1]), .85, '$MMAR_{{ALL}}$ > {CUTOFF:0.2f}')
+kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_sum', m_fig.add_subplot(gs[3,2]), .85, '$MMAR_{{ALL}}$ > {CUTOFF:0.2f}')
 
 
 # In[ ] Kaplan-Mier Survival
 from lifelines import KaplanMeierFitter
 from lib_prj.visualize import kmsurvival_mmar_confirm
 
-kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_mean_hrp', m_fig.add_subplot(gs[4,0]), .85, 'MMAR<HRP> > {CUTOFF:0.2f}')
-kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_max_hrp', m_fig.add_subplot(gs[4,1]), .85, 'MMAR<HRP> > {CUTOFF:0.2f}')
-kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_sum_hrp', m_fig.add_subplot(gs[4,2]), .85, 'MMAR<HRP> > {CUTOFF:0.2f}')
+kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_mean_hrp', m_fig.add_subplot(gs[4,0]), .85, '$MMAR_{{HRP}}$ > {CUTOFF:0.2f}')
+kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_max_hrp', m_fig.add_subplot(gs[4,1]), .85, '$MMAR_{{HRP}}$ > {CUTOFF:0.2f}')
+kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_sum_hrp', m_fig.add_subplot(gs[4,2]), .85, '$MMAR_{{HRP}}$ > {CUTOFF:0.2f}')
 
 # In[ ] Kaplan-Mier Survival
 from lifelines import KaplanMeierFitter
 from lib_prj.visualize import kmsurvival_mmar_confirm
 
-kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_mean_lrp', m_fig.add_subplot(gs[5,0]), .85, 'MMAR<LRP> > {CUTOFF:0.2f}')
-kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_max_lrp', m_fig.add_subplot(gs[5,1]), .85, 'MMAR<LRP> > {CUTOFF:0.2f}')
-kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_sum_lrp', m_fig.add_subplot(gs[5,2]), .85, 'MMAR<LRP> > {CUTOFF:0.2f}')
+kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_mean_lrp', m_fig.add_subplot(gs[5,0]), .85, '$MMAR_{{LRP}}$ > {CUTOFF:0.2f}')
+kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_max_lrp', m_fig.add_subplot(gs[5,1]), .85, '$MMAR_{{LRP}}$ > {CUTOFF:0.2f}')
+kmsurvival_mmar_confirm(df_main, OUTCOME_EVENT, OUTCOME_TIME, 'mmar_all_sum_lrp', m_fig.add_subplot(gs[5,2]), .85, '$MMAR_{{LRP}}$ > {CUTOFF:0.2f}')
 
 

@@ -48,6 +48,8 @@ def run(path_wr=''):
     pd_qsel_data_mi = pd_qsel_data_mi.replace(r'^\s*$', '0', regex=True)
     pd_qsel_data_mi = pd_qsel_data_mi.rename(columns={'lesion_culprit_ica_ct' : 'lesion_sel'})
     
+    pd_qsel_data_nomi = pd_qsel_data_nomi.drop(columns=['acm_time_confirm', 'death_confirm', 'death_confirm'])
+    
     # MERGE GROUPS
     pd_qsel_data = pd.concat([pd_qsel_data_nomi, pd_qsel_data_mi])
     
