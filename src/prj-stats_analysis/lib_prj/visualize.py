@@ -69,6 +69,29 @@ def table_mmar_confirm(df, index, ax=None, lbls=[]):
 
     return table_basic(df_agg_pivot.sort_values(by=index), '', ['w', '#f1f1f2', '#f1f1f2', 'w',], col_labels = lbls, ax=ax)
 
+def table_scct_confirm(df, index, ax=None, lbls=[]):
+    
+    def _tb_helper(_df, _index, _afunc, _col_lbl):
+        df_out = pd.pivot_table(_df, index=_index, aggfunc=_afunc)
+        df_out.columns = [x + _col_lbl for x in df_out.columns]
+        df_out.reset_index(inplace=True)
+        return df_out
+    
+    df_totals = _tb_helper(df, index, len, '_n').rename(columns={'confirm_idc_n' : 'n', 'mmar_n' : 'n'})
+    df_mean = _tb_helper(df, index, 'mean', '_mean')
+    df_std = _tb_helper(df, index, np.std, '_std')
+    
+    df_agg_list = [df_totals, df_mean, df_std]
+        # (this is prefered to using "concat" because "merge" will combine the mi_type columns, instead of including this column multiple times)
+    df_agg_pivot = reduce(lambda left, right: pd.merge(left, right, on=index,how='outer',), df_agg_list) 
+    
+    incld_cols = index.copy()
+    incld_cols.extend(['n', 'mmar_mean', 'mmar_std'])
+    df_agg_pivot = df_agg_pivot[incld_cols]
+    df_agg_pivot['pvalue'] = ''
+    
+    return table_basic(df_agg_pivot.sort_values(by='mmar_mean', ascending=False), '', ['w', '#f1f1f2', ], col_labels = lbls, ax=ax, keep_pvals=False)
+
 def table_pval_confirm(df, col_indpendent, col_var, col_lbl, col_lbl_cond):
     col_independent_inv = 'inv_'
     df[col_independent_inv] = ~(df[col_indpendent].astype('bool'))
@@ -96,7 +119,7 @@ def table_lesion_confirm(df, index, ax=None, lbls={}):
     df_agg_pivot = df_agg_pivot[incld_cols].rename(columns={'mmar_mean' : 'n_lesions'})
     table_basic(df_agg_pivot.sort_values(by=index), '', ['w', '#f1f1f2', '#f1f1f2', 'w',], col_labels = lbls, ax=ax)
 
-def table_basic(pd_data, fpath='tmp.png', row_colors=['#f1f1f2', 'w'], col_labels = [ ], ax=None, **kwargs):
+def table_basic(pd_data, fpath='tmp.png', row_colors=['#f1f1f2', 'w'], col_labels = [ ], ax=None, keep_pvals=True, **kwargs):
     '''
     
 
@@ -112,12 +135,12 @@ def table_basic(pd_data, fpath='tmp.png', row_colors=['#f1f1f2', 'w'], col_label
     None.
 
     '''
-    
-    
-    
+
     # SETUP AXIS:
     pd_data = pd_data.round(2) 
     pd_data = table_merge_mean_std(pd_data)
+    if not keep_pvals:
+        pd_data = pd_data.drop(columns=['pvalue'])
     if len(col_labels):
         pd_data.columns = col_labels
     ax = render_mpl_table(pd_data, header_columns=0, col_width=3.0, row_colors=row_colors, ax=ax)
@@ -309,7 +332,7 @@ def histplot(args):
     return cur_ax
 
 def swarmplot(args):
-    args['data'][args['x']] = [x.upper() for x in args['data'][args['x']]]
+    # args['data'][args['x']] = [x.upper() for x in args['data'][args['x']]]
     default_params = {
             'whis' : np.inf,
             'linewidth' : 5,
@@ -322,14 +345,30 @@ def swarmplot(args):
     default_params = {
             'dodge' : True,
             'edgecolor' : 'white',
-            'linewidth' : 3.0,
-            'alpha' : .5,
-            's' : 20, # CHANGE TO 10
+            'linewidth' : .25,
+            'alpha' : .25,
+            's' : 5, # CHANGE TO 10
             # 'label' : {'1' : 'MI', '0' : 'No MI'},
             }
     cur_ax = sns.stripplot(**{**args, **default_params})
-    cur_ax.get_legend().remove()
+    try:
+        # pass
+        cur_ax.get_legend().remove()
+    except:
+        pass
     
+    return cur_ax
+
+def linear_regression_plot(args):
+    
+    default_params = {
+            'ci' : None,
+            'fit_reg' : False,
+            }
+    cur_ax = sns.regplot(**{**args, **default_params})
+    cur_ax.set(xlim=(-0.1, args['data'][args['x']].max() + args['data'][args['x']].max() * .05))
+    cur_ax.set(ylim=(-0.1, args['data'][args['y']].max() + args['data'][args['y']].max() * .05))
+
     return cur_ax
     
 def kmsurvival_mmar_confirm(df:'pd.DataFrame', outcome_event:str, outcome_time:str, mmar_col:str, ax=None, q_cutoff=.85, lbl='{CUTOFF:0.2f}'):
@@ -339,7 +378,7 @@ def kmsurvival_mmar_confirm(df:'pd.DataFrame', outcome_event:str, outcome_time:s
         ax = fig.add_axes()
         
     cutoff_thresh = df[mmar_col].quantile([q_cutoff])[q_cutoff]
-    cutoff_thresh = 10
+    # cutoff_thresh = 10
     df_dummy = pd.DataFrame()
     df_dummy['outcome_event'] = df[outcome_event]
     df_dummy['outcome_time'] = df[outcome_time]

@@ -15,7 +15,7 @@ path_db = dir_main + '/data/database/db_CONFIRM-merged.accdb'
 # path_db = dir_main + '/data/db_CONFIRM-merged.accdb'
 
 # DATASET WITH CLEERLY CENTERLINES
-path_db = 'C:/Users/smalk/Desktop/MCP_STUDY/STUDY/DATABASE/db_CONFIRM-cleerly.accdb'
+path_db = 'C:/Users/smalk/Desktop/MCP_STUDY/STUDY-CLEERLY/DATABASE/db_CONFIRM-cleerly.accdb'
 
 
 
@@ -49,6 +49,7 @@ filt_br = lambda b : re.sub(r"((_\d)+$)|(\br_)|(\bl_)", '', b)
 pd_scct['id_vessel'] = [filt_br(br) for br in pd_scct['id_vessel']]
 scct_brs = list(pd.Series([filt_br(br) for br in pd_scct['id_vessel'].unique()]).unique())
 pd_scct = pd_scct.groupby(by=['confirm_idc', 'id_vessel']).agg('sum').reset_index()
+pd_scct['confirm_idc'] = pd_scct['confirm_idc'].astype('float')
 
 
 
@@ -130,7 +131,7 @@ df_match_tmp = df_match_tmp.merge(pd_confirm[['confirm_idc', 'mi_event']], how='
 # pd_mmar = pd_mmar.loc[pd_mmar['confirm_idc'].isin(df_match_confirm)] # TOGGLE TO FILTER FOR CASE-CONTROLLED PATIENTS
 
 # In[ ] MERGE SCCT DATA
-pd_scct = pd_scct.loc[pd_scct['confirm_idc'].isin(df_match_confirm)]
+# pd_scct = pd_scct.loc[pd_scct['confirm_idc'].isin(df_match_confirm)]
 
 PD_SCCT = pd_scct.merge(pd_confirm[['confirm_idc', 'mi_event', 'mi_type', 'mace_event_confirm']], on='confirm_idc', how='left')
 
@@ -141,72 +142,72 @@ pd_mmar['mass_mcp_perc'] =  pd_mmar['mass_mcp_perc']
 pd_mmar['mmar_hrp'] = np.where(pd_mmar['is_hrp'], pd_mmar['mass_mcp_perc'], 0)
 pd_mmar['mmar_lrp'] = np.where(~(pd_mmar['is_hrp']), pd_mmar['mass_mcp_perc'], 0)
 
-# In[ ] MMAR DATA - AGGREGATE
-pd_mmar_max_hrp = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'max', '_hrp', 'mmar_hrp')
-pd_mmar_min_hrp = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'min', '_hrp', 'mmar_hrp')
-pd_mmar_mean_hrp = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'mean', '_hrp', 'mmar_hrp')
-pd_mmar_sum_hrp = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'sum', '_hrp', 'mmar_hrp')
-pd_mmar_count_hrp = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_hrp', criteria_col='is_hrp')
+# # In[ ] MMAR DATA - AGGREGATE
+# pd_mmar_max_hrp = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'max', '_hrp', 'mmar_hrp')
+# pd_mmar_min_hrp = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'min', '_hrp', 'mmar_hrp')
+# pd_mmar_mean_hrp = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'mean', '_hrp', 'mmar_hrp')
+# pd_mmar_sum_hrp = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'sum', '_hrp', 'mmar_hrp')
+# pd_mmar_count_hrp = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_hrp', criteria_col='is_hrp')
 
-pd_mmar_max_lrp = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'max', '_lrp', 'mmar_lrp')
-pd_mmar_min_lrp = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'min', '_lrp', 'mmar_lrp')
-pd_mmar_mean_lrp = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'mean', '_lrp', 'mmar_lrp')
-pd_mmar_sum_lrp = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'sum', '_lrp', 'mmar_lrp')
-pd_mmar_count_lrp = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_lrp', criteria_col='is_lrp')
+# pd_mmar_max_lrp = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'max', '_lrp', 'mmar_lrp')
+# pd_mmar_min_lrp = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'min', '_lrp', 'mmar_lrp')
+# pd_mmar_mean_lrp = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'mean', '_lrp', 'mmar_lrp')
+# pd_mmar_sum_lrp = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'sum', '_lrp', 'mmar_lrp')
+# pd_mmar_count_lrp = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_lrp', criteria_col='is_lrp')
 
-pd_mmar_max = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'max')
-pd_mmar_min = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'min')
-pd_mmar_mean = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'mean')
-pd_mmar_sum = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'sum')
-pd_mmar_count = lib_prj.process.count_lesion_per_patient(pd_mmar, criteria_col='is_hrp')
-pd_mmar_count['mmar_all'] = pd_mmar_count_hrp['mmar_all_hrp'] + pd_mmar_count_lrp['mmar_all_lrp']
+# pd_mmar_max = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'max')
+# pd_mmar_min = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'min')
+# pd_mmar_mean = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'mean')
+# pd_mmar_sum = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'sum')
+# pd_mmar_count = lib_prj.process.count_lesion_per_patient(pd_mmar, criteria_col='is_hrp')
+# pd_mmar_count['mmar_all'] = pd_mmar_count_hrp['mmar_all_hrp'] + pd_mmar_count_lrp['mmar_all_lrp']
 
-# In[ ] LESION COUNT - PER VESSEL
-pd_mmar_count_lad_hrp = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_hrp', criteria_col='is_hrp_lad')
-pd_mmar_count_lad_lrp = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_lrp', criteria_col='is_lrp_lad')
-pd_mmar_count_lad = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_hrp', criteria_col='is_hrp_lad')
-pd_mmar_count_lad['mmar_all'] = pd_mmar_count_lad_hrp['mmar_all_hrp'] + pd_mmar_count_lad_lrp['mmar_all_lrp']
+# # In[ ] LESION COUNT - PER VESSEL
+# pd_mmar_count_lad_hrp = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_hrp', criteria_col='is_hrp_lad')
+# pd_mmar_count_lad_lrp = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_lrp', criteria_col='is_lrp_lad')
+# pd_mmar_count_lad = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_hrp', criteria_col='is_hrp_lad')
+# pd_mmar_count_lad['mmar_all'] = pd_mmar_count_lad_hrp['mmar_all_hrp'] + pd_mmar_count_lad_lrp['mmar_all_lrp']
 
-pd_mmar_count_lcx_hrp = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_hrp', criteria_col='is_hrp_lcx')
-pd_mmar_count_lcx_lrp = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_lrp', criteria_col='is_lrp_lcx')
-pd_mmar_count_lcx = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_hrp', criteria_col='is_hrp_lcx')
-pd_mmar_count_lcx['mmar_all'] = pd_mmar_count_lcx_hrp['mmar_all_hrp'] + pd_mmar_count_lcx_lrp['mmar_all_lrp']
+# pd_mmar_count_lcx_hrp = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_hrp', criteria_col='is_hrp_lcx')
+# pd_mmar_count_lcx_lrp = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_lrp', criteria_col='is_lrp_lcx')
+# pd_mmar_count_lcx = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_hrp', criteria_col='is_hrp_lcx')
+# pd_mmar_count_lcx['mmar_all'] = pd_mmar_count_lcx_hrp['mmar_all_hrp'] + pd_mmar_count_lcx_lrp['mmar_all_lrp']
 
-pd_mmar_count_rca_hrp = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_hrp', criteria_col='is_hrp_rca')
-pd_mmar_count_rca_lrp = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_lrp', criteria_col='is_lrp_rca')
-pd_mmar_count_rca = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_hrp', criteria_col='is_hrp_rca')
-pd_mmar_count_rca['mmar_all'] = pd_mmar_count_rca_hrp['mmar_all_hrp'] + pd_mmar_count_rca_lrp['mmar_all_lrp']
+# pd_mmar_count_rca_hrp = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_hrp', criteria_col='is_hrp_rca')
+# pd_mmar_count_rca_lrp = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_lrp', criteria_col='is_lrp_rca')
+# pd_mmar_count_rca = lib_prj.process.count_lesion_per_patient(pd_mmar, tag='_hrp', criteria_col='is_hrp_rca')
+# pd_mmar_count_rca['mmar_all'] = pd_mmar_count_rca_hrp['mmar_all_hrp'] + pd_mmar_count_rca_lrp['mmar_all_lrp']
                   
-# In[ ] COMBINE DATA - MERGE DATAFRAMES
-PD_COMBINED_MAX = pd_mmar_max.merge(pd_confirm, how='left', on='confirm_idc')
-PD_COMBINED_MIN = pd_mmar_min.merge(pd_confirm, how='left', on='confirm_idc')
-PD_COMBINED_MEAN = pd_mmar_mean.merge(pd_confirm, how='left', on='confirm_idc')
-PD_COMBINED_SUM = pd_mmar_sum.merge(pd_confirm, how='left', on='confirm_idc')
-PD_COMBINED_COUNT = pd_mmar_count.merge(pd_confirm, how='left', on='confirm_idc')
-# PD_COMBINED = pd.concat([PD_COMBINED_MAX, PD_COMBINED_MIN, PD_COMBINED_MEAN, PD_COMBINED_SUM])
+# # In[ ] COMBINE DATA - MERGE DATAFRAMES
+# PD_COMBINED_MAX = pd_mmar_max.merge(pd_confirm, how='left', on='confirm_idc')
+# PD_COMBINED_MIN = pd_mmar_min.merge(pd_confirm, how='left', on='confirm_idc')
+# PD_COMBINED_MEAN = pd_mmar_mean.merge(pd_confirm, how='left', on='confirm_idc')
+# PD_COMBINED_SUM = pd_mmar_sum.merge(pd_confirm, how='left', on='confirm_idc')
+# PD_COMBINED_COUNT = pd_mmar_count.merge(pd_confirm, how='left', on='confirm_idc')
+# # PD_COMBINED = pd.concat([PD_COMBINED_MAX, PD_COMBINED_MIN, PD_COMBINED_MEAN, PD_COMBINED_SUM])
 
-PD_COMBINED = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'max', '_max').merge(pd_confirm, how='left', on='confirm_idc')
-PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'min', '_min'), how='left', on='confirm_idc')
-PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'mean', '_mean'), how='left', on='confirm_idc')
-PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'sum', '_sum'), how='left', on='confirm_idc')
-PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'count', '_n'), how='left', on='confirm_idc')
+# PD_COMBINED = lib_prj.process.mmar_agg_per_patient(pd_mmar, 'max', '_max').merge(pd_confirm, how='left', on='confirm_idc')
+# PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'min', '_min'), how='left', on='confirm_idc')
+# PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'mean', '_mean'), how='left', on='confirm_idc')
+# PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'sum', '_sum'), how='left', on='confirm_idc')
+# PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'count', '_n'), how='left', on='confirm_idc')
 
-PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'max', '_max_hrp', 'mmar_hrp'), how='left', on='confirm_idc')
-PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'min', '_min_hrp', 'mmar_hrp'), how='left', on='confirm_idc')
-PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'mean', '_mean_hrp', 'mmar_hrp'), how='left', on='confirm_idc')
-PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'sum', '_sum_hrp', 'mmar_hrp'), how='left', on='confirm_idc')
-PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'count', '_n_hrp', 'mmar_hrp'), how='left', on='confirm_idc')
+# PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'max', '_max_hrp', 'mmar_hrp'), how='left', on='confirm_idc')
+# PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'min', '_min_hrp', 'mmar_hrp'), how='left', on='confirm_idc')
+# PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'mean', '_mean_hrp', 'mmar_hrp'), how='left', on='confirm_idc')
+# PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'sum', '_sum_hrp', 'mmar_hrp'), how='left', on='confirm_idc')
+# PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'count', '_n_hrp', 'mmar_hrp'), how='left', on='confirm_idc')
 
-PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'max', '_max_lrp', 'mmar_lrp'), how='left', on='confirm_idc')
-PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'min', '_min_lrp', 'mmar_lrp'), how='left', on='confirm_idc')
-PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'mean', '_mean_lrp', 'mmar_lrp'), how='left', on='confirm_idc')
-PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'sum', '_sum_lrp', 'mmar_lrp'), how='left', on='confirm_idc')
-PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'count', '_n_lrp', 'mmar_lrp'), how='left', on='confirm_idc')
-PD_COMBINED = PD_COMBINED.loc[~(PD_COMBINED['confirm_idc_str'].isna())]
+# PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'max', '_max_lrp', 'mmar_lrp'), how='left', on='confirm_idc')
+# PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'min', '_min_lrp', 'mmar_lrp'), how='left', on='confirm_idc')
+# PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'mean', '_mean_lrp', 'mmar_lrp'), how='left', on='confirm_idc')
+# PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'sum', '_sum_lrp', 'mmar_lrp'), how='left', on='confirm_idc')
+# PD_COMBINED = PD_COMBINED.merge(lib_prj.process.mmar_agg_per_patient(pd_mmar, 'count', '_n_lrp', 'mmar_lrp'), how='left', on='confirm_idc')
+# PD_COMBINED = PD_COMBINED.loc[~(PD_COMBINED['confirm_idc_str'].isna())]
 
-PD_LESION = pd_lesion
+# PD_LESION = pd_lesion
 
 # In[ ] MERGE REDCAP DATA
 # pd_redcap = pd_redcap.loc[pd_redcap['confirm_idc'].isin(df_match_confirm)]
 
-PD_REDCAP = pd_redcap.merge(pd_mmar.loc[pd_mmar['lesion_culprit_ica_ct'].astype('bool')==True], on='confirm_idc', how='left')
+# PD_REDCAP = pd_redcap.merge(pd_mmar.loc[pd_mmar['lesion_culprit_ica_ct'].astype('bool')==True], on='confirm_idc', how='left')
